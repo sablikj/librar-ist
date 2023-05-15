@@ -12,9 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.ExperimentalPagingApi
+import coil.annotation.ExperimentalCoilApi
+import dagger.hilt.android.AndroidEntryPoint
 import pt.ulisboa.tecnico.cmov.librarist.ui.theme.LibrarISTTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @ExperimentalCoilApi
+    @ExperimentalPagingApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

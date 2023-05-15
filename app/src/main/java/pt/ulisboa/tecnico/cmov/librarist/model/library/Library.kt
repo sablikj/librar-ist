@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.cmov.librarist.model.library
 
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
@@ -14,5 +13,5 @@ data class Library(
     val name: String? = "",
     val image_url: String = "",
     val location: String = "", // Coordinates
-    val books: MutableList<Int> // IDs of all books in the library (available or not)
+    val books: MutableList<Int> = mutableListOf() // IDs of all books in the library (available or not)
 )
