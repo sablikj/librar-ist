@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.librarist
+package pt.ulisboa.tecnico.cmov.librarist.screens.map
 
 import android.annotation.SuppressLint
 import android.content.Context

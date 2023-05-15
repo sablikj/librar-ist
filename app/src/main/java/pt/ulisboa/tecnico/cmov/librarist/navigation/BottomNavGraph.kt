@@ -11,11 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.paging.ExperimentalPagingApi
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLngBounds
-import pt.ulisboa.tecnico.cmov.librarist.MapState
+import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
 import pt.ulisboa.tecnico.cmov.librarist.clusters.ZoneClusterItem
 import pt.ulisboa.tecnico.cmov.librarist.clusters.ZoneClusterManager
-import pt.ulisboa.tecnico.cmov.librarist.screens.MapScreen
-import pt.ulisboa.tecnico.cmov.librarist.screens.SearchScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.search.SearchScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
@@ -77,4 +75,4 @@ fun BottomNavGraph(navController: NavHostController) {
             )
         }
     }
-}git
+}

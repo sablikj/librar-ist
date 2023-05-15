@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
-import pt.ulisboa.tecnico.cmov.librarist.MapState
 import pt.ulisboa.tecnico.cmov.librarist.clusters.ZoneClusterManager
 
 @Composable
