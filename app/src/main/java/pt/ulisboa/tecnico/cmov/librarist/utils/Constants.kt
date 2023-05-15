@@ -12,6 +12,16 @@ object Constants {
     const val DATABASE_NAME = "librarist_database"
     const val ITEMS_PER_PAGE = 8
 
+    object Routes {
+        // Detail keys
+        const val BOOK_DETAIL_ID = "bookId"
+        const val LIBRARY_DETAIL_ID = "libraryId"
+
+        // Detail routes
+        const val BOOK_DETAIL_ROUTE = "book"
+        const val LIBRARY_DETAIL_ROUTE = "library"
+    }
+
     object Graph {
         const val ROOT = "root_graph"
     }

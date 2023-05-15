@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.librarist
+package pt.ulisboa.tecnico.cmov.librarist.screens.map
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.pm.PackageManager
@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
-import pt.ulisboa.tecnico.cmov.librarist.screens.MapScreen
 
 @AndroidEntryPoint
 class MapActivity : ComponentActivity() {

@@ -10,7 +10,10 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.BOOK_TABLE
 data class Book(
     @PrimaryKey(autoGenerate = false)
     val id: Int = 0,
-    val name: String? = "",
+    val name: String = "",
+    val author: String = "",
+    val description: String = "",
     val image_url: String = "",
-    val available: Boolean,
+    val available: Boolean = true,
+    val image: String = "app/src/main/res/drawable/ic_placeholder.xml"
 )
