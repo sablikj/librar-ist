@@ -12,8 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+<<<<<<< HEAD
 import androidx.paging.ExperimentalPagingApi
 import coil.annotation.ExperimentalCoilApi
+=======
+>>>>>>> 18514229d6a2f7629a43684d5206a5ccfe9868d1
 import dagger.hilt.android.AndroidEntryPoint
 import pt.ulisboa.tecnico.cmov.librarist.ui.theme.LibrarISTTheme
 
