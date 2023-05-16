@@ -22,7 +22,8 @@ fun MapScreen(
     val mapUiSettings = MapUiSettings(
         zoomControlsEnabled = false,
         mapToolbarEnabled = true,
-        myLocationButtonEnabled = true
+        myLocationButtonEnabled = true,
+        compassEnabled = true
     )
 
     val cameraPositionState = rememberCameraPositionState()
@@ -38,7 +39,6 @@ fun MapScreen(
 
         ) {
             MarkerInfoWindow(
-                state = rememberMarkerState(position = LatLng(49.1, -122.5)),
                 snippet = "Some stuff",
                 onClick = {
                     System.out.println("Mitchs_: Cannot be clicked")
