@@ -48,7 +48,7 @@ fun BookItem(book: Book, onDetailClicked: (Int) -> Unit){
     )
 
     ElevatedCard(
-        onClick = { onDetailClicked(book.id) },
+        onClick = { onDetailClicked(book.barcode) },
         colors = CardDefaults.cardColors(
             containerColor =  MaterialTheme.colorScheme.primary,
         ),

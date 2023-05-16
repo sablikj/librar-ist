@@ -12,6 +12,8 @@ object Constants {
     const val DATABASE_NAME = "librarist_database"
     const val ITEMS_PER_PAGE = 8
 
+    // Permissions
+    const val REQUEST_LOCATION_PERMISSION_CODE = 1
     object Routes {
         // Detail keys
         const val BOOK_DETAIL_ID = "bookId"
