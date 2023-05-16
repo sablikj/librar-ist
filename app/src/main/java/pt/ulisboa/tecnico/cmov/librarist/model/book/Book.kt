@@ -9,7 +9,7 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.BOOK_TABLE
 @Entity(tableName = BOOK_TABLE)
 data class Book(
     @PrimaryKey(autoGenerate = false)
-    val id: Int = 0,
+    val barcode: Int = 0,
     val name: String = "",
     val author: String = "",
     val description: String = "",

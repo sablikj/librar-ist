@@ -68,9 +68,10 @@ fun BottomNavGraph(navController: NavHostController) {
             SearchScreen(
                 onDetailClicked = { bookId ->
                     // To avoid duplicate navigation events
-                    if (backStackEntry.lifecycle.currentState == Lifecycle.State.RESUMED) {
-                        navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$bookId")
-                    }
+                    navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$bookId")
+                    /*if (backStackEntry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+
+                    }*/
                 }
             )
         }
