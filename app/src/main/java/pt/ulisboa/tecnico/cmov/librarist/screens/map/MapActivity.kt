@@ -11,28 +11,41 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
+import android.Manifest
+
 
 @AndroidEntryPoint
 class MapActivity : ComponentActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.all { it.value }) {
+                // all permissions granted
                 viewModel.getDeviceLocation(fusedLocationProviderClient)
+            } else {
+                // one or more permissions denied
             }
         }
 
-    private fun askPermissions() = when {
-        ContextCompat.checkSelfPermission(
-            this,
-            ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED -> {
-            viewModel.getDeviceLocation(fusedLocationProviderClient)
-        }
-        else -> {
-            requestPermissionLauncher.launch(ACCESS_FINE_LOCATION)
+
+    private fun askPermissions() {
+        val requiredPermissions = arrayOf(
+            ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        when {
+            requiredPermissions.all {
+                ContextCompat.checkSelfPermission(
+                    this, it
+                ) == PackageManager.PERMISSION_GRANTED
+            } -> {
+                viewModel.getDeviceLocation(fusedLocationProviderClient)
+            }
+            else -> {
+                requestPermissionLauncher.launch(requiredPermissions)
+            }
         }
     }
 
@@ -45,9 +58,7 @@ class MapActivity : ComponentActivity() {
         askPermissions()
         setContent {
             MapScreen(
-                state = viewModel.state.value,
-                setupClusterManager = viewModel::setupClusterManager,
-                calculateZoneViewCenter = viewModel::calculateZoneLatLngBounds
+                state = viewModel.state.value
             )
         }
     }

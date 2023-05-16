@@ -6,24 +6,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import pt.ulisboa.tecnico.cmov.librarist.clusters.ZoneClusterManager
 
 @Composable
 fun MapScreen(
-    state: MapState,
-    setupClusterManager: (Context, GoogleMap) -> ZoneClusterManager,
-    calculateZoneViewCenter: () -> LatLngBounds,
+    state: MapState
 ) {
     val mapProperties = MapProperties(
         isMyLocationEnabled = state.lastKnownLocation != null,
     )
+    val mapUiSettings = MapUiSettings(
+        zoomControlsEnabled = false,
+        mapToolbarEnabled = true,
+        myLocationButtonEnabled = true
+    )
+
     val cameraPositionState = rememberCameraPositionState()
     val scope = rememberCoroutineScope()
     Box(
@@ -32,32 +33,10 @@ fun MapScreen(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             properties = mapProperties,
-            cameraPositionState = cameraPositionState
-        ) {
-            val context = LocalContext.current
-            MapEffect(state.clusterItems) { map ->
-                if (state.clusterItems.isNotEmpty()) {
-                    val clusterManager = setupClusterManager(context, map)
-                    map.setOnCameraIdleListener(clusterManager)
-                    map.setOnMarkerClickListener(clusterManager)
-                    state.clusterItems.forEach { clusterItem ->
-                        map.addPolygon(clusterItem.polygonOptions)
-                    }
-                    map.setOnMapLoadedCallback {
-                        if (state.clusterItems.isNotEmpty()) {
-                            scope.launch {
-                                cameraPositionState.animate(
-                                    update = CameraUpdateFactory.newLatLngBounds(
-                                        calculateZoneViewCenter(),
-                                        0
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            cameraPositionState = cameraPositionState,
+            uiSettings = mapUiSettings
 
+        ) {
             MarkerInfoWindow(
                 state = rememberMarkerState(position = LatLng(49.1, -122.5)),
                 snippet = "Some stuff",
@@ -68,23 +47,24 @@ fun MapScreen(
                 draggable = true
             )
 
-            // Added this LaunchedEffect block
             LaunchedEffect(state.lastKnownLocation) {
                 state.lastKnownLocation?.let { location ->
-                    scope.launch {
-                        cameraPositionState.centerOnLocation(location)
-                    }
+                    cameraPositionState.centerOnLocation(scope, location)
                 }
             }
         }
     }
 }
 
-private suspend fun CameraPositionState.centerOnLocation(
+fun CameraPositionState.centerOnLocation(
+    coroutineScope: CoroutineScope,
     location: Location
-) = animate(
-    update = CameraUpdateFactory.newLatLngZoom(
-        LatLng(location.latitude, location.longitude),
-        15f
-    ),
-)
+) {
+    coroutineScope.launch {
+        val update = CameraUpdateFactory.newLatLngZoom(
+            LatLng(location.latitude, location.longitude),
+            15f
+        )
+        animate(update)
+    }
+}
