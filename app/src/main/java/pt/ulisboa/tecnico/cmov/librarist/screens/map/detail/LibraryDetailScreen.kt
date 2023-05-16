@@ -48,6 +48,7 @@ fun LibraryDetailScreen() {
     val viewModel = hiltViewModel<LibraryDetailViewModel>()
     val library = viewModel.libraryDetail
     val loading = viewModel.loading
+    val context = LocalContext.current
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -146,7 +147,7 @@ fun LibraryDetailScreen() {
                             // Check-in button
                             Button(
                                 onClick = {
-                                          viewModel.checkIn()
+                                          viewModel.checkIn(context)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                                 // Uses ButtonDefaults.ContentPadding by default
