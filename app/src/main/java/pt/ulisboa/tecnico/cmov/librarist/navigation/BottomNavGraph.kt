@@ -9,8 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.paging.ExperimentalPagingApi
+import com.google.android.gms.maps.model.LatLng
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
-import pt.ulisboa.tecnico.cmov.librarist.clusters.ZoneClusterItem
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.search.SearchScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
@@ -18,7 +18,8 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 @OptIn(ExperimentalPagingApi::class)
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
-    val lastKnownLocation: Location? = null // Replace with your actual last known location
+    //TODO: Load saved lastLocation | Replace with your actual last known location
+    val lastKnownLocation: LatLng = LatLng( 38.736946,  -9.142685)
 
     // Construct your MapState
     val mapState = MapState(lastKnownLocation)
