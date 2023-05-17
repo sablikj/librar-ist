@@ -124,7 +124,7 @@ fun MapScreen(
             }
         )
     }
-
+    
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
