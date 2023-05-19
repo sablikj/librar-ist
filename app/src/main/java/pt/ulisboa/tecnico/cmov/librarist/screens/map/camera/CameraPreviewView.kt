@@ -1,12 +1,11 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.camera
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
-import androidx.camera.core.CameraControl
+import android.content.pm.PackageManager
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -29,17 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import pt.ulisboa.tecnico.cmov.librarist.R
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+
 
 @SuppressLint("RestrictedApi")
 @Composable
@@ -48,7 +43,6 @@ fun CameraPreviewView(
     lensFacing: Int = CameraSelector.LENS_FACING_BACK,
     cameraUIAction: (CameraUIAction) -> Unit
 ) {
-
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -69,7 +63,6 @@ fun CameraPreviewView(
         )
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize()) {
 
@@ -142,5 +135,13 @@ fun CameraControl(
             tint = Color.White
         )
     }
-
+}
+//TODO: Fix permissions when declined
+@Composable
+fun checkStoragePermission(): Boolean {
+    val context = LocalContext.current
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
 }

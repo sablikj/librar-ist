@@ -105,6 +105,4 @@ class MapViewModel @Inject constructor(application: Application,): ViewModel()
         }
         return addressText
     }
-
-
 }

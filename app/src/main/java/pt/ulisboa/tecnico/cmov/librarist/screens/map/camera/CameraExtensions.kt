@@ -3,6 +3,9 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map.camera
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -29,34 +32,36 @@ fun ImageCapture.takePicture(
     onError: (ImageCaptureException) -> Unit
 ) {
     val outputDirectory = context.getOutputDirectory()
+
     // Create output file to hold the image
     val photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION)
     val outputFileOptions = getOutputFileOptions(lensFacing, photoFile)
 
-    this.takePicture(
-        outputFileOptions,
-        Executors.newSingleThreadExecutor(),
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                // If the folder selected is an external media directory, this is
-                // unnecessary but otherwise other apps will not be able to access our
-                // images unless we scan them using [MediaScannerConnection]
-                val mimeType = MimeTypeMap.getSingleton()
-                    .getMimeTypeFromExtension(savedUri.toFile().extension)
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(savedUri.toFile().absolutePath),
-                    arrayOf(mimeType)
-                ) { _, uri ->
+    // Add a delay before taking the picture
+    Handler(Looper.getMainLooper()).postDelayed({
+        this.takePicture(
+            outputFileOptions,
+            Executors.newSingleThreadExecutor(),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                    val mimeType = MimeTypeMap.getSingleton()
+                        .getMimeTypeFromExtension(savedUri.toFile().extension)
+                    MediaScannerConnection.scanFile(
+                        context,
+                        arrayOf(savedUri.toFile().absolutePath),
+                        arrayOf(mimeType)
+                    ) { _, uri ->
 
+                    }
+                    onImageCaptured(savedUri, false)
                 }
-                onImageCaptured(savedUri, false)
+                override fun onError(exception: ImageCaptureException) {
+                    onError(exception)
+                }
             }
-            override fun onError(exception: ImageCaptureException) {
-                onError(exception)
-            }
-        })
+        )
+    }, 500) // Delay of 500ms
 }
 
 
@@ -71,11 +76,9 @@ fun getOutputFileOptions(
         isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
     }
     // Create output options object which contains file + metadata
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
+    return ImageCapture.OutputFileOptions.Builder(photoFile)
         .setMetadata(metadata)
         .build()
-
-    return outputOptions
 }
 
 fun createFile(baseFolder: File, format: String, extension: String) =
