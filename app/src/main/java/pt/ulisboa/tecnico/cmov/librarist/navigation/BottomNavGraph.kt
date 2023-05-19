@@ -12,8 +12,10 @@ import androidx.paging.ExperimentalPagingApi
 import com.google.android.gms.maps.model.LatLng
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
+import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.NewLibraryForm
 import pt.ulisboa.tecnico.cmov.librarist.screens.search.SearchScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
+
 
 @OptIn(ExperimentalPagingApi::class)
 @Composable
@@ -32,6 +34,7 @@ fun BottomNavGraph(navController: NavHostController) {
         // Main tab
         composable(route = BottomBarScreen.Map.route){
             MapScreen(
+                navController = navController,
                 state = mapState
             )
         }
@@ -46,6 +49,17 @@ fun BottomNavGraph(navController: NavHostController) {
                     }*/
                 }
             )
+        }
+        // New Library form
+        composable("newLibraryForm/{latitude}/{longitude}") { backStackEntry ->
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull()
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull()
+
+            if (latitude != null && longitude != null) {
+                NewLibraryForm(navController, LatLng(latitude, longitude))
+            } else {
+                // Handle error or fallback situation
+            }
         }
     }
 }
