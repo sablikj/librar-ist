@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -41,10 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -55,6 +58,7 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.librarist.R
+import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.CameraPreviewView
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.CameraUIAction
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.getCameraProvider
@@ -68,7 +72,11 @@ fun MapScreen(
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
+
+    // Map markers
+    val libraries by viewModel.state.value.libraries
 
     // Camera related
     val snackbarHostState = remember { SnackbarHostState() }
@@ -80,8 +88,9 @@ fun MapScreen(
     val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
 
     // Adding new library
+    var newLibrary: Library? = null
     var showLibraryDialog = remember { mutableStateOf(false)}
-    val location: MutableState<LatLng> = mutableStateOf(state.lastKnownLocation)
+    val location: MutableState<LatLng> = mutableStateOf(LatLng(0.0,0.0))
     var showPin = remember { mutableStateOf(false) }
 
     // New library form
@@ -127,6 +136,30 @@ fun MapScreen(
         compassEnabled = true
     )
 
+    // Adding new Library
+    val imageObserver = remember(lifecycleOwner) {
+        Observer<ByteArray> { imageBytes ->
+            val newLibrary = Library(
+                name = name.value,
+                image = imageBytes,
+                location = location.value,
+                books = mutableListOf() // empty list for now
+            )
+            viewModel.addLibrary(newLibrary)
+            Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
+        }
+    }
+    LaunchedEffect(viewModel.currentImageBytes) {
+        viewModel.currentImageBytes.observe(lifecycleOwner, imageObserver)
+    }
+
+    DisposableEffect(imageObserver) {
+        onDispose {
+            viewModel.currentImageBytes.removeObserver(imageObserver)
+        }
+    }
+
+    // Getting current location
     LaunchedEffect(key1 = Unit) {
         // Location permission
         if (ContextCompat.checkSelfPermission(
@@ -173,6 +206,12 @@ fun MapScreen(
             contentPadding = PaddingValues(0.dp,0.dp,8.dp,64.dp)
 
         ) {
+            libraries.forEach { library ->
+                Marker(
+                    state = MarkerState(position = library.location),
+                    title = library.name,
+                )
+            }
             MarkerInfoWindow(
                 snippet = "Some stuff",
                 onClick = {
@@ -192,7 +231,11 @@ fun MapScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            onClick = { showPin.value = true }
+            onClick = {
+                // Reset image path
+                photoUri.value = ""
+                showPin.value = true
+            }
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Add library")
         }
@@ -212,6 +255,7 @@ fun MapScreen(
         }
 
         if (showLibraryDialog.value) {
+            //TODO: FIX - address is always same
             address.value = viewModel.getReadableLocation(location.value, context)
             NewLibraryDialog(name, address, location, showCamera, showLibraryDialog, photoUri)
         }
@@ -248,8 +292,10 @@ fun NewLibraryDialog(
     location: MutableState<LatLng>,
     showCamera: MutableState<Boolean>,
     showLibraryDialog: MutableState<Boolean>,
-    photo_uri: MutableState<String>
+    photo_uri: MutableState<String>,
+    viewModel: MapViewModel = hiltViewModel()
 ){
+    val context = LocalContext.current
     val shouldDismiss = remember { mutableStateOf(false) }
 
     // Returning values
@@ -326,7 +372,9 @@ fun NewLibraryDialog(
                     Text("Take Photo")
                 }
                 Button(onClick = {
-                    shouldDismiss.value = true }) {
+                    viewModel.uriToImage(Uri.parse(photo_uri.value))
+                    shouldDismiss.value = true
+                }) {
                     Text("Confirm")
                 }
             }

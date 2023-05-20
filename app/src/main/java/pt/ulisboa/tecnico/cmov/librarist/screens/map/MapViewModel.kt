@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -29,14 +31,38 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.R
+import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import java.io.ByteArrayOutputStream
 import java.util.Locale
 import javax.inject.Inject
 
 
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+    @Provides
+    fun provideContentResolver(@ApplicationContext context: Context): ContentResolver {
+        return context.contentResolver
+    }
+}
+
 @HiltViewModel
-class MapViewModel @Inject constructor(application: Application,): ViewModel()
+class MapViewModel @Inject constructor(application: Application,
+                                       private val contentResolver: ContentResolver
+): ViewModel()
 {
+    // Markers
+    val markers: MutableLiveData<List<Library>> = MutableLiveData(listOf())
+    val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
+
+    init {
+        updateLibraries()
+    }
 
     // Location
     @SuppressLint("StaticFieldLeak")
@@ -45,13 +71,53 @@ class MapViewModel @Inject constructor(application: Application,): ViewModel()
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
 
 
-    // Location related
-
     val state: MutableState<MapState> = mutableStateOf(
         MapState(
-            lastKnownLocation = LatLng(1.35, 103.87)
+            lastKnownLocation = LatLng(1.35, 103.87),
+            libraries = mutableStateOf(listOf())
         )
     )
+
+    // Converting URI to byteArray
+    fun uriToImage(uri: Uri) = viewModelScope.launch {
+        val byteArray = uriToByteArray(uri)
+        currentImageBytes.postValue(byteArray)
+    }
+
+    private suspend fun uriToByteArray(uri: Uri): ByteArray {
+        return withContext(Dispatchers.IO) {
+            val inputStream = contentResolver.openInputStream(uri)
+            val outputStream = ByteArrayOutputStream()
+            inputStream.use { input ->
+                val buffer = ByteArray(1024)
+                var read: Int
+                while (input?.read(buffer).also { read = it ?: -1 } != -1) {
+                    outputStream.write(buffer, 0, read)
+                }
+            }
+            return@withContext outputStream.toByteArray()
+        }
+    }
+
+    fun addLibrary(library: Library) {
+        viewModelScope.launch {
+            //TODO: remove and use DAO // not working ofc
+            val currentLibraries = state.value.libraries.value
+            val updatedLibraries = currentLibraries + library
+            state.value.libraries.value = updatedLibraries
+            //TODO: Library DAO
+            //libraryDao.insert(library) // Assuming you have a libraryDao for accessing the database
+            updateLibraries()
+        }
+    }
+
+    fun updateLibraries() {
+        viewModelScope.launch {
+            //TODO: Library DAO
+            //val libraries = libraryDao.getAll() // Assuming you have a method to get all libraries
+            //state.libraries.value = libraries
+        }
+    }
 
     @Composable
     fun checkLocationPermission(): Boolean {
