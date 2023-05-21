@@ -11,6 +11,7 @@
 * Coil
 * Bar Code Scanner
 * Maps SDK
+* [Gson](https://github.com/google/gson)
 
 
 ## Authors
