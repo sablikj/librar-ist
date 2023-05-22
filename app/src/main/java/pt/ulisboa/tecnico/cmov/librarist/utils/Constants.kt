@@ -1,6 +1,9 @@
 package pt.ulisboa.tecnico.cmov.librarist.utils
 
 object Constants {
+    //API
+    const val API_BASE = "http://100.68.28.168:5000/"
+
     // Object tables
     const val LIBRARY_TABLE = "library_table"
     const val BOOK_TABLE = "book_table"

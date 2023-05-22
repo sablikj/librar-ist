@@ -75,8 +75,8 @@ fun MapScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
 
-    // Map markers
-    val libraries by viewModel.state.value.libraries
+    // Adding new library trigger
+    var addNewLibrary = remember { mutableStateOf(false) }
 
     // Camera related
     val snackbarHostState = remember { SnackbarHostState() }
@@ -88,9 +88,7 @@ fun MapScreen(
     val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
 
     // Adding new library
-    var newLibrary: Library? = null
     var showLibraryDialog = remember { mutableStateOf(false)}
-    val location: MutableState<LatLng> = mutableStateOf(LatLng(0.0,0.0))
     var showPin = remember { mutableStateOf(false) }
 
     // New library form
@@ -139,14 +137,19 @@ fun MapScreen(
     // Adding new Library
     val imageObserver = remember(lifecycleOwner) {
         Observer<ByteArray> { imageBytes ->
-            val newLibrary = Library(
-                name = name.value,
-                image = imageBytes,
-                location = location.value,
-                books = mutableListOf() // empty list for now
-            )
-            viewModel.addLibrary(newLibrary)
-            Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
+            if (addNewLibrary.value) {
+                val newLibrary = Library(
+                    name = name.value,
+                    image = imageBytes,
+                    location = viewModel.location.value,
+                    books = mutableListOf() // empty list for now
+                )
+                viewModel.addLibrary(newLibrary)
+                Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
+
+                // Reset the trigger after the library has been added
+                addNewLibrary.value = false
+            }
         }
     }
     LaunchedEffect(viewModel.currentImageBytes) {
@@ -206,20 +209,12 @@ fun MapScreen(
             contentPadding = PaddingValues(0.dp,0.dp,8.dp,64.dp)
 
         ) {
-            libraries.forEach { library ->
+            viewModel.state.value.libraries.value.forEach { library ->
                 Marker(
                     state = MarkerState(position = library.location),
                     title = library.name,
                 )
             }
-            MarkerInfoWindow(
-                snippet = "Some stuff",
-                onClick = {
-                    System.out.println("Mitchs_: Cannot be clicked")
-                    true
-                },
-                draggable = true
-            )
 
             LaunchedEffect(state.lastKnownLocation) {
                 state.lastKnownLocation?.let { location ->
@@ -250,14 +245,13 @@ fun MapScreen(
             }
             // Open only if Camera and storage permissions are granted
             if(camStorGranted){
-                ComposeMapCenterPointMapMarker(scope, showLibraryDialog, state.lastKnownLocation, location, showPin)
+                ComposeMapCenterPointMapMarker(scope, showLibraryDialog, state.lastKnownLocation, viewModel.location, showPin)
             }
         }
 
         if (showLibraryDialog.value) {
-            //TODO: FIX - address is always same
-            address.value = viewModel.getReadableLocation(location.value, context)
-            NewLibraryDialog(name, address, location, showCamera, showLibraryDialog, photoUri)
+            address.value = viewModel.getReadableLocation(viewModel.location.value, context)
+            NewLibraryDialog(name, address, viewModel.location, showCamera, showLibraryDialog, photoUri, addNewLibrary)
         }
 
         if (showCamera.value) {
@@ -276,7 +270,6 @@ fun MapScreen(
                     val cameraProvider = context.getCameraProvider()
                     cameraProvider.unbindAll()
                 }
-
                 showCamera.value = false
                 stopCamera.value = false
                 showLibraryDialog.value = true
@@ -293,6 +286,7 @@ fun NewLibraryDialog(
     showCamera: MutableState<Boolean>,
     showLibraryDialog: MutableState<Boolean>,
     photo_uri: MutableState<String>,
+    addNewLibrary: MutableState<Boolean>,
     viewModel: MapViewModel = hiltViewModel()
 ){
     val context = LocalContext.current
@@ -372,8 +366,16 @@ fun NewLibraryDialog(
                     Text("Take Photo")
                 }
                 Button(onClick = {
-                    viewModel.uriToImage(Uri.parse(photo_uri.value))
-                    shouldDismiss.value = true
+                    if(photo_uri.value.isEmpty()){
+                        Toast.makeText(context, "Photo of the library is required.", Toast.LENGTH_SHORT).show()
+                    }else if (name.value.isEmpty()){
+                        Toast.makeText(context, "Name of the library is required.", Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        viewModel.uriToImage(Uri.parse(photo_uri.value))
+                        shouldDismiss.value = true
+                        addNewLibrary.value = true
+                    }
                 }) {
                     Text("Confirm")
                 }
@@ -385,9 +387,12 @@ fun NewLibraryDialog(
 
 @Composable
 fun ComposeMapCenterPointMapMarker(
-    scope:CoroutineScope, showForm: MutableState<Boolean>,
-    currentLocation: LatLng, location: MutableState<LatLng>,
-    showPin: MutableState<Boolean>) {
+    scope:CoroutineScope,
+    showForm: MutableState<Boolean>,
+    currentLocation: LatLng,
+    location: MutableState<LatLng>,
+    showPin: MutableState<Boolean>
+){
     val shouldDismiss = remember { mutableStateOf(false) }
 
     //TODO: should be current location

@@ -9,11 +9,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +18,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -35,7 +30,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import pt.ulisboa.tecnico.cmov.librarist.R
+import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
 import java.io.ByteArrayOutputStream
 import java.util.Locale
@@ -53,11 +48,19 @@ object AppModule {
 
 @HiltViewModel
 class MapViewModel @Inject constructor(application: Application,
+                                       val repository: Repository,
                                        private val contentResolver: ContentResolver
 ): ViewModel()
 {
+    val state: MutableState<MapState> = mutableStateOf(
+        MapState(
+            lastKnownLocation = LatLng(1.35, 103.87),
+            libraries = mutableStateOf(listOf())
+        )
+    )
+
     // Markers
-    val markers: MutableLiveData<List<Library>> = MutableLiveData(listOf())
+    val location = mutableStateOf(LatLng(0.0, 0.0))
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
 
     init {
@@ -68,15 +71,9 @@ class MapViewModel @Inject constructor(application: Application,
     @SuppressLint("StaticFieldLeak")
     private val context: Context = application.applicationContext
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+    //TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
 
-
-    val state: MutableState<MapState> = mutableStateOf(
-        MapState(
-            lastKnownLocation = LatLng(1.35, 103.87),
-            libraries = mutableStateOf(listOf())
-        )
-    )
 
     // Converting URI to byteArray
     fun uriToImage(uri: Uri) = viewModelScope.launch {
@@ -101,21 +98,18 @@ class MapViewModel @Inject constructor(application: Application,
 
     fun addLibrary(library: Library) {
         viewModelScope.launch {
-            //TODO: remove and use DAO // not working ofc
-            val currentLibraries = state.value.libraries.value
-            val updatedLibraries = currentLibraries + library
-            state.value.libraries.value = updatedLibraries
-            //TODO: Library DAO
-            //libraryDao.insert(library) // Assuming you have a libraryDao for accessing the database
+            repository.addLibrary(library)
             updateLibraries()
         }
     }
 
-    fun updateLibraries() {
+    private fun updateLibraries() {
         viewModelScope.launch {
-            //TODO: Library DAO
-            //val libraries = libraryDao.getAll() // Assuming you have a method to get all libraries
-            //state.libraries.value = libraries
+            val libs = withContext(Dispatchers.IO) {
+               repository.getLibraries()
+            }
+            state.value.libraries.value = libs
+            Log.d("zdena", state.value.libraries.toString())
         }
     }
 
@@ -163,8 +157,6 @@ class MapViewModel @Inject constructor(application: Application,
             if (addresses?.isNotEmpty() == true) {
                 val address = addresses[0]
                 addressText = "${address.getAddressLine(0)}, ${address.locality}"
-                // Use the addressText in your app
-                Log.d("geolocation", addressText)
             }
         } catch (e: Exception) {
             Log.d("geolocation", e.message.toString())

@@ -7,5 +7,5 @@ import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
 
 data class MapState(
     val lastKnownLocation: LatLng,
-    val libraries: MutableState<List<Library>> = mutableStateOf(listOf())
+    var libraries: MutableState<List<Library>> = mutableStateOf(listOf())
 )
