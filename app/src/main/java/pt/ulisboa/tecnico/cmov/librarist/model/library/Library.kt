@@ -20,6 +20,5 @@ data class Library(
 
     @TypeConverters(BookListConverter::class)
     var books: List<Book> = listOf(), // All books in the library (available or not)
-    @Transient // should be saved locally but not on server
-    var favourite: Boolean = false
+    var favourite: Boolean = false // Local storage only
 )

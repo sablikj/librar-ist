@@ -1,11 +1,13 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
 import android.content.Context
+import android.net.wifi.ScanResult
 import android.util.Log
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -41,9 +43,7 @@ class LibraryDetailViewModel @Inject constructor(
     val loading = mutableStateOf(false)
     val libraryId = savedStateHandle.get<Int>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
 
-
     var libraryDetail by mutableStateOf(Library())
-        private set
 
     // Bar code scanner
     private val options = GmsBarcodeScannerOptions.Builder()
@@ -53,7 +53,6 @@ class LibraryDetailViewModel @Inject constructor(
         .build()
 
     init {
-        //TODO: Implement
         Log.d("detail", "Detail test init")
         libraryId?.let {
             loading.value = true
@@ -93,25 +92,27 @@ class LibraryDetailViewModel @Inject constructor(
     }
 
     fun favourite(){
-        libraryDetail.favourite = !libraryDetail.favourite
-    }
+        libraryDetail = libraryDetail.copy(favourite = !libraryDetail.favourite)
 
-    fun removeFavourite(){
-        //TODO: Implement
+        // Updating library locally
+        viewModelScope.launch {
+            repository.addLibrary(libraryDetail)
+        }
     }
 }
 
 @Composable
 fun CheckInScreen(viewModel: LibraryDetailViewModel = hiltViewModel()) {
-    val scanResult by viewModel.scanResult.observeAsState("")
+    val scanResult = viewModel.scanResult.observeAsState("")
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.checkIn(context)
     }
+    Log.d("scan", scanResult.value)
 
-    if (scanResult.isNotEmpty()) {
+    if (scanResult.value.isNotEmpty()) {
         Snackbar(){
-            Text(text = scanResult)
+            Text(text = scanResult.value)
         }
     }
 }

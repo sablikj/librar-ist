@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -199,15 +200,28 @@ fun MapScreen(
         ) {
             // Adding library markers
             viewModel.state.value.libraries.value.forEach { library ->
-                Marker(
-                    state = MarkerState(position = library.location),
-                    title = library.name,
-                    onInfoWindowClick = {
-                        scope.launch {
-                            onMarkerClicked(library.id)
+                if(library.favourite){
+                    Marker(
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
+                        state = MarkerState(position = library.location),
+                        title = library.name,
+                        onInfoWindowClick = {
+                            scope.launch {
+                                onMarkerClicked(library.id)
+                            }
                         }
-                    }
-                )
+                    )
+                }else{
+                    Marker(
+                        state = MarkerState(position = library.location),
+                        title = library.name,
+                        onInfoWindowClick = {
+                            scope.launch {
+                                onMarkerClicked(library.id)
+                            }
+                        }
+                    )
+                }
             }
 
             LaunchedEffect(state.lastKnownLocation) {

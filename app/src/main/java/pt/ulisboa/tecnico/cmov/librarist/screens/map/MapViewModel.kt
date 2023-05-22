@@ -109,7 +109,6 @@ class MapViewModel @Inject constructor(application: Application,
                repository.getLibraries()
             }
             state.value.libraries.value = libs
-            Log.d("zdena", state.value.libraries.toString())
         }
     }
 
