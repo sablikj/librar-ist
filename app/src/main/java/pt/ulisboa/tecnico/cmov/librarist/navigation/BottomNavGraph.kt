@@ -1,17 +1,19 @@
 package pt.ulisboa.tecnico.cmov.librarist.navigation
 
 
-import android.content.Context
-import android.location.Location
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.paging.ExperimentalPagingApi
 import com.google.android.gms.maps.model.LatLng
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
+import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.LibraryDetailScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.search.SearchScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 
@@ -30,22 +32,38 @@ fun BottomNavGraph(navController: NavHostController) {
         route = Constants.Graph.ROOT,
         startDestination = BottomBarScreen.Map.route
     ){
-        // Main tab
-        composable(route = BottomBarScreen.Map.route){
+        // Map tab
+        composable(route = BottomBarScreen.Map.route){ backStackEntry ->
             MapScreen(
-                navController = navController,
-                state = mapState
+                state = mapState,
+                onMarkerClicked = { libraryId ->
+                    Log.d("detail", "composable mapscreen")
+                    if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
+                        navController.navigate("${Constants.Routes.LIBRARY_DETAIL_ROUTE}/$libraryId")
+                    }
+                }
             )
+        }
+        // Library detail
+        composable(
+            route = "${Constants.Routes.LIBRARY_DETAIL_ROUTE}/{${Constants.Routes.LIBRARY_DETAIL_ID}}",
+            arguments = listOf(
+                navArgument(Constants.Routes.LIBRARY_DETAIL_ID) {
+                    type = NavType.IntType
+                }
+            ),
+        ) {
+            Log.d("detail", "composable detail")
+            LibraryDetailScreen()
         }
         // Book search tab
         composable(route = BottomBarScreen.BookSearch.route){ backStackEntry ->
             SearchScreen(
                 onDetailClicked = { bookId ->
                     // To avoid duplicate navigation events
-                    navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$bookId")
-                    /*if (backStackEntry.lifecycle.currentState == Lifecycle.State.RESUMED) {
-
-                    }*/
+                    if (backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED) {
+                        navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$bookId")
+                    }
                 }
             )
         }

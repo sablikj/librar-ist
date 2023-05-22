@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.librarist.data
 
 import android.util.Log
+import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
@@ -24,6 +25,14 @@ class Repository @Inject constructor(
     }
 
     suspend fun getLibraries(): List<Library> {
+        val localLibraries = libraryDao.getLibraries()
+
+        // If the local database is not empty, return the libraries from it
+        if (localLibraries.isNotEmpty()) {
+            return localLibraries
+        }
+
+        // If the local database is empty, make the API call
         return try {
             val response = libraryApi.getLibraries()
             if(response.isSuccessful && response.body() != null){
@@ -31,23 +40,30 @@ class Repository @Inject constructor(
                 libraryDao.addLibraries(response.body()!!)
                 response.body()!!
             } else {
-                // If the API call fails, return the libraries from the local database
-                libraryDao.getLibraries()
+                emptyList()
             }
         } catch (e: Exception) {
-            // If the API call fails, return the libraries from the local database
-            libraryDao.getLibraries()
+            emptyList()
         }
     }
 
-    suspend fun updateLibrary(library: Library) {
-        libraryDao.updateLibrary(library)
 
-        // Try to update it on the server
+    suspend fun refreshLibraryDetail(id: Int) {
         try {
-            libraryApi.updateLibrary(library.id, library)
-        } catch (e: Exception) {
-            Log.e("Repository", "Error updating library on server", e)
+            val response = libraryApi.getLibraryDetail(id)
+            if(response.isSuccessful && response.body() != null){
+                // If the API call is successful, update the local database and return the libraries
+                libraryDao.insert(response.body()!!)
+                response.body()!!
+            } else {
+                Log.d("API", "Failed to fetch the data.")
+            }
+        }catch (e: Exception){
+            Log.d("ErrorLaunchDetail", e.toString())
         }
     }
+
+    fun getLibraryDetail(id: Int): Flow<Library> =
+        libraryDatabase.libraryDao().getLibraryDetail(id)
+
 }

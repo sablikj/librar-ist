@@ -52,6 +52,7 @@ fun MainScreen(navController: NavHostController) {
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary)
                     )
                 }
+                /*
                 "searchLaunch", "searchRocket", "searchAgency" -> {}
                 else -> {
                     CenterAlignedTopAppBar(
@@ -77,7 +78,7 @@ fun MainScreen(navController: NavHostController) {
                         },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary)
                     )
-                }
+                }*/
             }
         },
         bottomBar = { BottomBar(navController = navController) }

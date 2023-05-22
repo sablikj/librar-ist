@@ -19,6 +19,12 @@ interface LibraryApi {
     @GET("libraries")
     suspend fun getLibraries(): Response<List<Library>>
 
+    // Get one library
+    @GET("libraries/{id}/")
+    suspend fun getLibraryDetail(
+        @Path("id") id: Int
+    ): Response<Library>
+
     // Add library
     @POST("libraries")
     suspend fun addLibrary(

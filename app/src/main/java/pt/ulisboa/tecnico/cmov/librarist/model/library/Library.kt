@@ -12,13 +12,14 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.LatLngConverter
 @Entity(tableName = LIBRARY_TABLE)
 data class Library(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val name: String = "",
-    val image: ByteArray = byteArrayOf(),
-
+    var id: Int = 0,
+    var name: String = "",
+    var image: ByteArray = byteArrayOf(),
     @TypeConverters(LatLngConverter::class)
-    val location: LatLng = LatLng(0.0, 0.0),
+    var location: LatLng = LatLng(0.0, 0.0),
 
     @TypeConverters(BookListConverter::class)
-    val books: List<Book> = listOf() // All books in the library (available or not)
+    var books: List<Book> = listOf(), // All books in the library (available or not)
+    @Transient // should be saved locally but not on server
+    var favourite: Boolean = false
 )

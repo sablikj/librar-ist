@@ -12,35 +12,25 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -49,8 +39,6 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -67,8 +55,8 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.takePicture
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
-    navController: NavController,
     state: MapState,
+    onMarkerClicked: (Int) -> Unit,
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -76,25 +64,25 @@ fun MapScreen(
     val scope = rememberCoroutineScope()
 
     // Adding new library trigger
-    var addNewLibrary = remember { mutableStateOf(false) }
+    val addNewLibrary = remember { mutableStateOf(false) }
 
     // Camera related
     val snackbarHostState = remember { SnackbarHostState() }
-    var showCamera = remember { mutableStateOf(false) }
-    var stopCamera = remember { mutableStateOf(false) }
+    val showCamera = remember { mutableStateOf(false) }
+    val stopCamera = remember { mutableStateOf(false) }
 
     // Location related
     val cameraPositionState = rememberCameraPositionState()
     val lastKnownLocation by viewModel.lastKnownLocation.observeAsState()
 
     // Adding new library
-    var showLibraryDialog = remember { mutableStateOf(false)}
-    var showPin = remember { mutableStateOf(false) }
+    val showLibraryDialog = remember { mutableStateOf(false)}
+    val showPin = remember { mutableStateOf(false) }
 
     // New library form
-    var name = remember { mutableStateOf("") }
-    var address = remember { mutableStateOf("") }
-    var photoUri = remember { mutableStateOf<String>("") }
+    val name = remember { mutableStateOf("") }
+    val address = remember { mutableStateOf("") }
+    val photoUri = remember { mutableStateOf<String>("") }
 
     // Permissions
     var permissionGranted by remember { mutableStateOf(false) }
@@ -209,15 +197,21 @@ fun MapScreen(
             contentPadding = PaddingValues(0.dp,0.dp,8.dp,64.dp)
 
         ) {
+            // Adding library markers
             viewModel.state.value.libraries.value.forEach { library ->
                 Marker(
                     state = MarkerState(position = library.location),
                     title = library.name,
+                    onInfoWindowClick = {
+                        scope.launch {
+                            onMarkerClicked(library.id)
+                        }
+                    }
                 )
             }
 
             LaunchedEffect(state.lastKnownLocation) {
-                state.lastKnownLocation?.let { location ->
+                state.lastKnownLocation.let { location ->
                     cameraPositionState.centerOnLocation(scope, location)
                 }
             }
@@ -279,113 +273,6 @@ fun MapScreen(
 }
 
 @Composable
-fun NewLibraryDialog(
-    name: MutableState<String>,
-    address: MutableState<String>,
-    location: MutableState<LatLng>,
-    showCamera: MutableState<Boolean>,
-    showLibraryDialog: MutableState<Boolean>,
-    photo_uri: MutableState<String>,
-    addNewLibrary: MutableState<Boolean>,
-    viewModel: MapViewModel = hiltViewModel()
-){
-    val context = LocalContext.current
-    val shouldDismiss = remember { mutableStateOf(false) }
-
-    // Returning values
-    if (shouldDismiss.value){
-        shouldDismiss.value = false
-        showLibraryDialog.value = false
-        return
-    }
-
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text("New library") },
-        text = {
-            Column {
-                // Name
-                TextField(
-                    value = name.value,
-                    onValueChange = { newName -> name.value = newName },
-                    label = { Text("Name") }
-                )
-
-                // If no is available address, display location instead
-                if(address.value.contains("null")){
-                    // Location
-                    TextField(
-                        value = "${location.value.latitude} | ${location.value.longitude}",
-                        enabled = false,
-                        onValueChange = {},
-                        label = { Text("Location") }
-                    )
-                }else{
-                    // Address
-                    TextField(
-                        value = address.value,
-                        onValueChange = { newAddress: String -> address.value = newAddress },
-                        label = { Text("Address") }
-                    )
-                }
-                Spacer(modifier = Modifier.padding(PaddingValues(8.dp)),)
-                if(photo_uri.value != ""){
-                    val imagePainter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(photo_uri.value)
-                            .error(R.drawable.ic_placeholder)
-                            .placeholder(R.drawable.ic_placeholder)
-                            .build(),
-                        contentScale = ContentScale.Fit
-                    )
-
-                    Image(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(CardDefaults.elevatedShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        painter = imagePainter,
-                        contentDescription = name.value,
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        showCamera.value = true
-                        shouldDismiss.value = true
-                    }) {
-                    Text("Take Photo")
-                }
-                Button(onClick = {
-                    if(photo_uri.value.isEmpty()){
-                        Toast.makeText(context, "Photo of the library is required.", Toast.LENGTH_SHORT).show()
-                    }else if (name.value.isEmpty()){
-                        Toast.makeText(context, "Name of the library is required.", Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        viewModel.uriToImage(Uri.parse(photo_uri.value))
-                        shouldDismiss.value = true
-                        addNewLibrary.value = true
-                    }
-                }) {
-                    Text("Confirm")
-                }
-            }
-        }
-    )
-}
-
-
-@Composable
 fun ComposeMapCenterPointMapMarker(
     scope:CoroutineScope,
     showForm: MutableState<Boolean>,
@@ -445,7 +332,7 @@ fun CameraPositionState.centerOnLocation(
 fun CameraView(onImageCaptured: (Uri, Boolean) -> Unit, onError: (ImageCaptureException) -> Unit) {
 
     val context = LocalContext.current
-    var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
+    val lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
         ImageCapture.Builder().build()
     }

@@ -2,24 +2,36 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import javax.inject.Inject
 
 @HiltViewModel
 class LibraryDetailViewModel @Inject constructor(
-    //private val repository: Repository,
+    private val repository: Repository,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -27,13 +39,14 @@ class LibraryDetailViewModel @Inject constructor(
     val scanResult: LiveData<String> get() = _scanResult
 
     val loading = mutableStateOf(false)
-    private val libraryId: Int? = savedStateHandle[Constants.Routes.LIBRARY_DETAIL_ID]
+    val libraryId = savedStateHandle.get<Int>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
+
 
     var libraryDetail by mutableStateOf(Library())
         private set
 
     // Bar code scanner
-    val options = GmsBarcodeScannerOptions.Builder()
+    private val options = GmsBarcodeScannerOptions.Builder()
         .setBarcodeFormats(
             Barcode.FORMAT_EAN_13
         )
@@ -41,7 +54,7 @@ class LibraryDetailViewModel @Inject constructor(
 
     init {
         //TODO: Implement
-        /*
+        Log.d("detail", "Detail test init")
         libraryId?.let {
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
@@ -55,7 +68,7 @@ class LibraryDetailViewModel @Inject constructor(
                     }
                 }
             }
-        } */
+        }
     }
 
     fun checkIn(context: Context) {
@@ -79,15 +92,15 @@ class LibraryDetailViewModel @Inject constructor(
         // Should open the camera and scan the barcode, then remove from library
     }
 
-    fun addFavourite(){
-        //TODO: Implement
+    fun favourite(){
+        libraryDetail.favourite = !libraryDetail.favourite
     }
 
     fun removeFavourite(){
         //TODO: Implement
     }
 }
-/*
+
 @Composable
 fun CheckInScreen(viewModel: LibraryDetailViewModel = hiltViewModel()) {
     val scanResult by viewModel.scanResult.observeAsState("")
@@ -101,4 +114,4 @@ fun CheckInScreen(viewModel: LibraryDetailViewModel = hiltViewModel()) {
             Text(text = scanResult)
         }
     }
-}*/
+}
