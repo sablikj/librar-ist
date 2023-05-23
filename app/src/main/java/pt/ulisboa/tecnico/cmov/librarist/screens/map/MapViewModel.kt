@@ -6,9 +6,14 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.location.Geocoder
 import android.location.Location
+import android.media.ExifInterface
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -76,23 +81,57 @@ class MapViewModel @Inject constructor(application: Application,
 
 
     // Converting URI to byteArray
+    // TODO: add to separate file to avoid code duplicity
     fun uriToImage(uri: Uri) = viewModelScope.launch {
         val byteArray = uriToByteArray(uri)
         currentImageBytes.postValue(byteArray)
     }
-
     private suspend fun uriToByteArray(uri: Uri): ByteArray {
         return withContext(Dispatchers.IO) {
-            val inputStream = contentResolver.openInputStream(uri)
-            val outputStream = ByteArrayOutputStream()
-            inputStream.use { input ->
-                val buffer = ByteArray(1024)
-                var read: Int
-                while (input?.read(buffer).also { read = it ?: -1 } != -1) {
-                    outputStream.write(buffer, 0, read)
+            var parcelFileDescriptor: ParcelFileDescriptor? = null
+            try {
+                parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+                val fileDescriptor = parcelFileDescriptor?.fileDescriptor
+                val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+
+                // Read the orientation from the Exif data
+                val exif = fileDescriptor?.let { ExifInterface(it) }
+                val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+
+                // Create a matrix to perform transformations on the bitmap
+                val matrix = Matrix()
+
+                // Rotate the bitmap according to the orientation
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
                 }
+
+                // Create a new bitmap that has been rotated correctly
+                val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+
+                // Resizing the image
+                val targetWidth = 800  // specify desired width
+                val scaleFactor = targetWidth.toDouble() / rotatedBitmap.width.toDouble()
+                val targetHeight = (rotatedBitmap.height * scaleFactor).toInt()
+                val resizedBitmap = Bitmap.createScaledBitmap(rotatedBitmap, targetWidth, targetHeight, true)
+
+                // Compressing the image and converting to ByteArray
+                val outputStream = ByteArrayOutputStream()
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+
+                // Calculate size in megabytes
+                val sizeInMb = outputStream.size() / 1024.0 / 1024.0
+
+                // Log the size of the resulting byte array
+                Log.d("ImageCompression", "Compressed image size: $sizeInMb MB")
+
+                return@withContext outputStream.toByteArray()
+            } finally {
+                // Ensure the ParcelFileDescriptor is closed
+                parcelFileDescriptor?.close()
             }
-            return@withContext outputStream.toByteArray()
         }
     }
 
