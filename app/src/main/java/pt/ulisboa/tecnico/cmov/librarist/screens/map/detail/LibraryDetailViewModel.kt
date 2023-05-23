@@ -1,16 +1,16 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
+import android.content.ContentResolver
 import android.content.Context
-import android.net.wifi.ScanResult
+import android.net.Uri
 import android.util.Log
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,18 +27,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
 class LibraryDetailViewModel @Inject constructor(
-    private val repository: Repository,
-    savedStateHandle: SavedStateHandle
+    val repository: Repository,
+    savedStateHandle: SavedStateHandle,
+    private val contentResolver: ContentResolver
 ): ViewModel() {
 
-    private val _scanResult = MutableLiveData<String>()
-    val scanResult: LiveData<String> get() = _scanResult
+    val scanResult = MutableLiveData<String>()
+
+    val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
+    val showBookDialog = mutableStateOf(false)
+    val processBarCode = mutableStateOf(false)
 
     val loading = mutableStateOf(false)
     val libraryId = savedStateHandle.get<Int>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
@@ -53,17 +59,14 @@ class LibraryDetailViewModel @Inject constructor(
         .build()
 
     init {
-        Log.d("detail", "Detail test init")
-        libraryId?.let {
+        libraryId.let {
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 repository.refreshLibraryDetail(libraryId)
                 repository.getLibraryDetail(it).collect {detail ->
                     withContext(Dispatchers.Main) {
-                        if (detail != null) {
-                            libraryDetail = detail
-                            loading.value = false
-                        }
+                        libraryDetail = detail
+                        loading.value = false
                     }
                 }
             }
@@ -75,14 +78,14 @@ class LibraryDetailViewModel @Inject constructor(
         scanner.startScan()
             .addOnSuccessListener { barcode ->
                 // Task completed successfully
-                _scanResult.value = barcode.rawValue
-                barcode.rawValue?.let { Log.d("barcode", it) }
+                scanResult.value = barcode.rawValue.toString()
+                processBarCode.value = true
             }
             .addOnCanceledListener {
-                // Task canceled
+                Log.d("Barcode", "Barcode scanning was canceled")
             }
             .addOnFailureListener { e ->
-                // Task failed with an exception
+                Log.d("Barcode", "Barcode scanning failed: $e")
             }
     }
 
@@ -99,20 +102,40 @@ class LibraryDetailViewModel @Inject constructor(
             repository.addLibrary(libraryDetail)
         }
     }
-}
 
-@Composable
-fun CheckInScreen(viewModel: LibraryDetailViewModel = hiltViewModel()) {
-    val scanResult = viewModel.scanResult.observeAsState("")
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        viewModel.checkIn(context)
+    // Converting URI to byteArray
+    //TODO: remove duplicate code (these fncs and same ones in the MapViewModel)
+    fun uriToImage(uri: Uri) = viewModelScope.launch {
+        val byteArray = uriToByteArray(uri)
+        currentImageBytes.postValue(byteArray)
     }
-    Log.d("scan", scanResult.value)
 
-    if (scanResult.value.isNotEmpty()) {
-        Snackbar(){
-            Text(text = scanResult.value)
+    private suspend fun uriToByteArray(uri: Uri): ByteArray {
+        return withContext(Dispatchers.IO) {
+            val inputStream = contentResolver.openInputStream(uri)
+            val outputStream = ByteArrayOutputStream()
+            inputStream.use { input ->
+                val buffer = ByteArray(1024)
+                var read: Int
+                while (input?.read(buffer).also { read = it ?: -1 } != -1) {
+                    outputStream.write(buffer, 0, read)
+                }
+            }
+            return@withContext outputStream.toByteArray()
         }
+    }
+
+    fun addNewBook(book: Book){
+        // Adding book to the library
+        libraryDetail.books.add(book)
+
+        // Saving book to db and updating library
+        viewModelScope.launch {
+            repository.addBook(book)
+            repository.updateLibrary(libraryDetail)
+        }
+
+        // Updating library
+
     }
 }

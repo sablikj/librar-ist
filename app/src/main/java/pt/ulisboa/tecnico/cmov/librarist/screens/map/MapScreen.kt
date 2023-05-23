@@ -3,14 +3,9 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
-import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -47,11 +41,9 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.librarist.R
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
-import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.CameraPreviewView
-import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.CameraUIAction
-import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.getCameraProvider
-import pt.ulisboa.tecnico.cmov.librarist.screens.map.camera.takePicture
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
+import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
+import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -338,33 +330,5 @@ fun CameraPositionState.centerOnLocation(
         val update = CameraUpdateFactory.newLatLngZoom(
             location,15f)
         animate(update)
-    }
-}
-
-// Camera
-@Composable
-fun CameraView(onImageCaptured: (Uri, Boolean) -> Unit, onError: (ImageCaptureException) -> Unit) {
-
-    val context = LocalContext.current
-    val lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
-    val imageCapture: ImageCapture = remember {
-        ImageCapture.Builder().build()
-    }
-
-    CameraPreviewView(
-        imageCapture,
-        lensFacing
-    ) { cameraUIAction ->
-        when (cameraUIAction) {
-            is CameraUIAction.OnCameraClick -> {
-                imageCapture.takePicture(context, lensFacing, onImageCaptured, onError)
-            }
-            is CameraUIAction.OnAcceptImageClick -> {
-                //TODO: implement
-            }
-            is CameraUIAction.OnDenyImageClick -> {
-                //TODO: implement
-            }
-        }
     }
 }

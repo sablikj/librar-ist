@@ -1,10 +1,10 @@
-package pt.ulisboa.tecnico.cmov.librarist.model.library
+package pt.ulisboa.tecnico.cmov.librarist.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.android.gms.maps.model.LatLng
-import pt.ulisboa.tecnico.cmov.librarist.model.book.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.utils.BookListConverter
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.LIBRARY_TABLE
 import pt.ulisboa.tecnico.cmov.librarist.utils.LatLngConverter
@@ -19,6 +19,6 @@ data class Library(
     var location: LatLng = LatLng(0.0, 0.0),
 
     @TypeConverters(BookListConverter::class)
-    var books: List<Book> = listOf(), // All books in the library (available or not)
+    var books: MutableList<Book> = mutableListOf<Book>(), // All books in the library (available or not)
     var favourite: Boolean = false // Local storage only
 )

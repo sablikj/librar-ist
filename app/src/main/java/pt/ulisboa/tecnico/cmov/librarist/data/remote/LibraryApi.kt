@@ -1,7 +1,7 @@
 package pt.ulisboa.tecnico.cmov.librarist.data.remote
 
-import pt.ulisboa.tecnico.cmov.librarist.model.book.Book
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

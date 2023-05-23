@@ -2,10 +2,10 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -31,10 +33,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,11 +49,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -61,8 +70,15 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import pt.ulisboa.tecnico.cmov.librarist.R
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
+import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.centerOnLocation
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextAlign
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,9 +87,26 @@ fun LibraryDetailScreen() {
     val viewModel = hiltViewModel<LibraryDetailViewModel>()
     val library = viewModel.libraryDetail
     val loading = viewModel.loading
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val cameraPositionState = rememberCameraPositionState {}
+    //val scanResult = viewModel.scanResult.observeAsState()
+    val showBookDialog = viewModel.showBookDialog
+
+    // Adding new library trigger
+    //val showBookDialog = remember { mutableStateOf(false)}
+    val addNewBook = remember { mutableStateOf(false) }
+    val showCamera = remember { mutableStateOf(false) }
+    val stopCamera = remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // New book form
+    val name = remember { mutableStateOf("") }
+    val author = remember { mutableStateOf("") }
+    val photoUri = remember { mutableStateOf("") }
 
     LaunchedEffect(viewModel.libraryDetail.location){
         cameraPositionState.position =  CameraPosition.fromLatLngZoom(library.location, 18f)
@@ -100,6 +133,71 @@ fun LibraryDetailScreen() {
         compassEnabled = false
     )
 
+    if(showBookDialog.value){
+        NewBookDialog(viewModel.scanResult, name, author, showCamera, showBookDialog, photoUri, addNewBook, viewModel)
+    }
+
+    // Adding new book
+    val imageObserver = remember(lifecycleOwner) {
+        Observer<ByteArray> { imageBytes ->
+            if (addNewBook.value) {
+                val newBook = viewModel.scanResult.value?.let {
+                    Book(
+                        barcode = it,
+                        name = name.value,
+                        image = imageBytes,
+                        author = author.value,
+                        available = true
+                    )
+                }
+                if (newBook != null) {
+                    viewModel.addNewBook(newBook)
+
+                    Toast.makeText(context, "New book added!", Toast.LENGTH_SHORT).show()
+                }
+
+                // Reset the trigger after the library has been added
+                addNewBook.value = false
+            }
+        }
+    }
+    // Updating library locally when it changes
+    // TODO: should replace but does not
+    LaunchedEffect(viewModel.libraryDetail.books.size) {
+        Log.d("Barcode", "Updating library")
+        viewModel.repository.updateLibrary(library)
+    }
+
+    if(viewModel.processBarCode.value){
+        LaunchedEffect(viewModel.scanResult.value) {
+            if(viewModel.scanResult.value != ""){
+                val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(it)}}
+
+                if(book == null){
+                    viewModel.showBookDialog.value = true
+                    Log.d("Barcode", "Book not found, create new one")
+                }else{
+                    viewModel.libraryDetail.books.add(book)
+                    Log.d("Barcode", "Book found, adding to library")
+                }
+            }
+            else{
+                Log.d("Barcode", "Barcode was not scanned successfully")
+            }
+            viewModel.processBarCode.value = false
+        }
+    }
+
+    LaunchedEffect(viewModel.currentImageBytes) {
+        viewModel.currentImageBytes.observe(lifecycleOwner, imageObserver)
+    }
+
+    DisposableEffect(imageObserver) {
+        onDispose {
+            viewModel.currentImageBytes.removeObserver(imageObserver)
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(modifier = Modifier.padding(bottom = 8.dp),
@@ -114,7 +212,6 @@ fun LibraryDetailScreen() {
                 actions = {
                     IconButton(onClick = {
                         viewModel.favourite()
-                        Log.d("favourite", "Favourite clicked")
                     }) {
                         Icon(Icons.Filled.Favorite,
                             contentDescription = "Favourite",
@@ -257,55 +354,103 @@ fun LibraryDetailScreen() {
                             }
                         }
                     }
-                    // Available books
                     ElevatedCard(
                         colors = CardDefaults.cardColors(
-                            containerColor =  MaterialTheme.colorScheme.secondaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(500.dp) // change to a height that suits your needs
                             .padding(vertical = 6.dp)
                     ) {
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primary))
-                        {
-                            Row(
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primary),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .weight(1f)
+                                    .padding(horizontal = 6.dp),
+                                text = "Available books",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        //Available books
+                        if(library.books.isNotEmpty()){
+                            LazyColumn(
+                                modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Text(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 6.dp),
-                                    text = "Available books",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                    fontWeight = FontWeight.Bold,
-                                )
+                                items(library.books) { book ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = book.name,
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+                                            Text(
+                                                text = book.author,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+                                        }
+                                        Image(
+                                            painter = rememberAsyncImagePainter(model = book.image),
+                                            contentDescription = "Book cover image",
+                                            modifier = Modifier
+                                                .size(64.dp)
+                                                .clip(RoundedCornerShape(4.dp))
+                                        )
+                                    }
+                                }
                             }
-                            //TODO: implement available books
-                            Row(
+                        }else{
+                            Text(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ){
-                                Text(
-                                    modifier = Modifier
-                                        .padding(6.dp),
-                                    text = "Books goes here",
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                    .weight(1f)
+                                    .padding(horizontal = 6.dp),
+                                text = "No available books",
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = FontWeight.Bold,
+                            )
                         }
                     }
+                }
+            }
+            if (showCamera.value) {
+                CameraView(onImageCaptured = { uri, _ ->
+                    photoUri.value = uri.toString()
+                    stopCamera.value = true
+                    //TODO: after saving marker, set URI to "" so it does not appear when adding another library
+                }, onError = { _ ->
+                    scope.launch {
+                        snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
+                    }
+                })
+
+                if(stopCamera.value){
+                    LaunchedEffect(stopCamera.value){
+                        val cameraProvider = context.getCameraProvider()
+                        cameraProvider.unbindAll()
+                    }
+                    showCamera.value = false
+                    stopCamera.value = false
+                    showBookDialog.value = true
                 }
             }
         }

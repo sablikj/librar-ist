@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.librarist.screens.map.camera
+package pt.ulisboa.tecnico.cmov.librarist.screens.camera
 
 import android.content.Context
 import android.media.MediaScannerConnection

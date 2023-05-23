@@ -4,7 +4,8 @@ import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -12,6 +13,7 @@ class Repository @Inject constructor(
     private val libraryDatabase: LibraryDatabase
 ) {
     private val libraryDao = libraryDatabase.libraryDao()
+    private val bookDao = libraryDatabase.bookDao()
 
     suspend fun addLibrary(library: Library) {
         libraryDao.insert(library)
@@ -19,6 +21,17 @@ class Repository @Inject constructor(
         // Try to update it on the server
         try {
             libraryApi.addLibrary(library)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error adding library to server", e)
+        }
+    }
+
+    suspend fun updateLibrary(library: Library){
+        libraryDao.updateLibrary(library)
+
+        // Try to update it on the server
+        try {
+            libraryApi.updateLibrary(library.id, library)
         } catch (e: Exception) {
             Log.e("Repository", "Error adding library to server", e)
         }
@@ -66,4 +79,40 @@ class Repository @Inject constructor(
     fun getLibraryDetail(id: Int): Flow<Library> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
+
+    suspend fun addBook(book: Book) {
+        bookDao.insert(book)
+
+        // Try to update it on the server
+        try {
+            libraryApi.addBook(book)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error adding book to server", e)
+        }
+    }
+
+    // Mainly for book check-in
+    suspend fun getBook(barcode: String): Book? {
+        // Look for book in local data
+        val localBook = bookDao.getBookDetail(barcode)
+
+        // Book not found
+        if (localBook == null){
+            // Look for book in server
+            try {
+                val response = libraryApi.getBook(barcode)
+                if(response.isSuccessful && response.body() != null){
+                    // Book located on the server
+                    return response.body()!!
+                } else {
+                    // Book does not exist in local or server data
+                    return null
+                }
+            }catch (e: Exception){
+                Log.d("ErrorLaunchDetail", e.toString())
+            }
+        }
+        // Return book from local storage
+        return localBook
+    }
 }

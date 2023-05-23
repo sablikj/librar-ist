@@ -3,7 +3,7 @@ package pt.ulisboa.tecnico.cmov.librarist.utils
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import pt.ulisboa.tecnico.cmov.librarist.model.book.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
 
 class BookListConverter {
     @TypeConverter

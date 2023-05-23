@@ -6,7 +6,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import pt.ulisboa.tecnico.cmov.librarist.model.book.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import javax.inject.Inject
 
 @HiltViewModel

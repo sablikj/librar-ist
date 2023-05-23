@@ -6,8 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import pt.ulisboa.tecnico.cmov.librarist.model.book.Book
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
 
 @Dao
 interface LibraryDao {

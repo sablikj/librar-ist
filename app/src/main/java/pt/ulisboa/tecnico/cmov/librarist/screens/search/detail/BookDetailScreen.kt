@@ -41,7 +41,7 @@ fun BookDetailScreen()
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(book.image_url)
+            .data(book.image)
             .crossfade(durationMillis = 1000)
             .error(R.drawable.ic_placeholder)
             .placeholder(R.drawable.ic_placeholder)
@@ -98,31 +98,6 @@ fun BookDetailScreen()
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 3,
                                 overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        // Description
-                        if(book.description != ""){
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-
-                                ){
-                                Text(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(6.dp),
-                                    text = book.description.toString(),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            }
-                            Divider(modifier = Modifier
-                                .padding(6.dp)
-                                .background(MaterialTheme.colorScheme.secondaryContainer)
                             )
                         }
 

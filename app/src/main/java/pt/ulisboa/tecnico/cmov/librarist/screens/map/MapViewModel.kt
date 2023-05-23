@@ -31,7 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
-import pt.ulisboa.tecnico.cmov.librarist.model.library.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import java.io.ByteArrayOutputStream
 import java.util.Locale
 import javax.inject.Inject
@@ -71,7 +71,7 @@ class MapViewModel @Inject constructor(application: Application,
     @SuppressLint("StaticFieldLeak")
     private val context: Context = application.applicationContext
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-    //TODO: use variable from state
+    // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
 
 

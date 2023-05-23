@@ -2,16 +2,16 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2e1da32b1383ce217aa84d669e9e5d00",
+    "identityHash": "1ff9a621cb2ff18120e7a2ff6ee88af3",
     "entities": [
       {
         "tableName": "book_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcode` INTEGER NOT NULL, `name` TEXT NOT NULL, `author` TEXT NOT NULL, `description` TEXT NOT NULL, `image_url` TEXT NOT NULL, `available` INTEGER NOT NULL, `image` TEXT NOT NULL, PRIMARY KEY(`barcode`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcode` TEXT NOT NULL, `name` TEXT NOT NULL, `author` TEXT NOT NULL, `available` INTEGER NOT NULL, `image` BLOB NOT NULL, PRIMARY KEY(`barcode`))",
         "fields": [
           {
             "fieldPath": "barcode",
             "columnName": "barcode",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -27,18 +27,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "image_url",
-            "columnName": "image_url",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "available",
             "columnName": "available",
             "affinity": "INTEGER",
@@ -47,7 +35,7 @@
           {
             "fieldPath": "image",
             "columnName": "image",
-            "affinity": "TEXT",
+            "affinity": "BLOB",
             "notNull": true
           }
         ],
@@ -114,7 +102,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e1da32b1383ce217aa84d669e9e5d00')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ff9a621cb2ff18120e7a2ff6ee88af3')"
     ]
   }
 }
