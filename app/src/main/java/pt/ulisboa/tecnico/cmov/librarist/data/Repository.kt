@@ -59,8 +59,6 @@ class Repository @Inject constructor(
             emptyList()
         }
     }
-
-
     suspend fun refreshLibraryDetail(id: Int) {
         try {
             val response = libraryApi.getLibraryDetail(id)
@@ -114,5 +112,20 @@ class Repository @Inject constructor(
         }
         // Return book from local storage
         return localBook
+    }
+
+    suspend fun refreshBookDetail(barcode: String) {
+        try {
+            val response = libraryApi.getBook(barcode)
+            if(response.isSuccessful && response.body() != null){
+                // If the API call is successful, update the local database and return the book
+                bookDao.insert(response.body()!!)
+                response.body()!!
+            } else {
+                Log.d("API", "Failed to fetch the data.")
+            }
+        }catch (e: Exception){
+            Log.d("ErrorLaunchDetail", e.toString())
+        }
     }
 }

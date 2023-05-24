@@ -19,6 +19,6 @@ data class Library(
     var location: LatLng = LatLng(0.0, 0.0),
 
     @TypeConverters(BookListConverter::class)
-    var books: MutableList<Book> = mutableListOf<Book>(), // All books in the library (available or not)
+    var books: MutableList<Book> = mutableListOf(), // All books in the library (available or not)
     var favourite: Boolean = false // Local storage only
 )

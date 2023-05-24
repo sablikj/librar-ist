@@ -11,7 +11,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -42,6 +41,7 @@ class LibraryDetailViewModel @Inject constructor(
 
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
     val showBookDialog = mutableStateOf(false)
+    val checkIn = mutableStateOf(false)
     val processBarCode = mutableStateOf(false)
 
     val loading = mutableStateOf(false)
@@ -61,6 +61,7 @@ class LibraryDetailViewModel @Inject constructor(
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 repository.refreshLibraryDetail(libraryId)
+                // TODO: call getLibrary instead
                 repository.getLibraryDetail(it).collect {detail ->
                     withContext(Dispatchers.Main) {
                         libraryDetail = detail
@@ -71,13 +72,14 @@ class LibraryDetailViewModel @Inject constructor(
         }
     }
 
-    fun checkIn(context: Context) {
+    fun ProcessBook(context: Context, checkInBook: Boolean) {
         val scanner = GmsBarcodeScanning.getClient(context, options)
         scanner.startScan()
             .addOnSuccessListener { barcode ->
                 // Task completed successfully
                 scanResult.value = barcode.rawValue.toString()
                 processBarCode.value = true
+                checkIn.value = checkInBook
             }
             .addOnCanceledListener {
                 Log.d("Barcode", "Barcode scanning was canceled")
@@ -85,11 +87,6 @@ class LibraryDetailViewModel @Inject constructor(
             .addOnFailureListener { e ->
                 Log.d("Barcode", "Barcode scanning failed: $e")
             }
-    }
-
-    fun checkOut(){
-        //TODO: Implement
-        // Should open the camera and scan the barcode, then remove from library
     }
 
     fun favourite(){

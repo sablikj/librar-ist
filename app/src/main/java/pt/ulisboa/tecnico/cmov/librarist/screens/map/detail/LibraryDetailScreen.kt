@@ -39,7 +39,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -76,6 +74,7 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.centerOnLocation
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -83,7 +82,9 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LibraryDetailScreen() {
+fun LibraryDetailScreen(
+    onBookClicked: (String) -> Unit
+) {
     val viewModel = hiltViewModel<LibraryDetailViewModel>()
     val library = viewModel.libraryDetail
     val loading = viewModel.loading
@@ -93,11 +94,9 @@ fun LibraryDetailScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val cameraPositionState = rememberCameraPositionState {}
-    //val scanResult = viewModel.scanResult.observeAsState()
     val showBookDialog = viewModel.showBookDialog
 
     // Adding new library trigger
-    //val showBookDialog = remember { mutableStateOf(false)}
     val addNewBook = remember { mutableStateOf(false) }
     val showCamera = remember { mutableStateOf(false) }
     val stopCamera = remember { mutableStateOf(false) }
@@ -147,12 +146,12 @@ fun LibraryDetailScreen() {
                         name = name.value,
                         image = imageBytes,
                         author = author.value,
-                        available = true
+                        notifications = false,
+                        libraries = mutableListOf()
                     )
                 }
                 if (newBook != null) {
                     viewModel.addNewBook(newBook)
-
                     Toast.makeText(context, "New book added!", Toast.LENGTH_SHORT).show()
                 }
 
@@ -162,27 +161,49 @@ fun LibraryDetailScreen() {
         }
     }
     // Updating library locally when it changes
-    // TODO: should replace but does not
     LaunchedEffect(viewModel.libraryDetail.books.size) {
-        Log.d("Barcode", "Updating library")
         viewModel.repository.updateLibrary(library)
     }
 
+    // Triggered after barcode is scanned
     if(viewModel.processBarCode.value){
         LaunchedEffect(viewModel.scanResult.value) {
             if(viewModel.scanResult.value != ""){
                 val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(it)}}
+                Log.d("book", "detail book: $book")
 
                 if(book == null){
-                    viewModel.showBookDialog.value = true
-                    Log.d("Barcode", "Book not found, create new one")
+                    if(viewModel.checkIn.value){
+                        // Check-in
+                        viewModel.showBookDialog.value = true
+                    }
+                    else{
+                        // Check-out
+                        Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
+                    }
                 }else{
-                    viewModel.libraryDetail.books.add(book)
-                    Log.d("Barcode", "Book found, adding to library")
+                    if(viewModel.checkIn.value){
+                        // Check-in
+                        viewModel.libraryDetail.books.add(book)
+                        Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
+                    }else{
+                        // Check-out
+                        // If scanned book is in this library, remove it
+                        if (viewModel.libraryDetail.books.any { it.barcode == book.barcode }) {
+                            Log.d("books", viewModel.libraryDetail.books.size.toString())
+                            val index = viewModel.libraryDetail.books.indexOfFirst { it.barcode == book.barcode }
+                            if (index >= 0) {
+                                viewModel.libraryDetail.books.removeAt(index)
+                            }
+                            Log.d("books", viewModel.libraryDetail.books.size.toString())
+                        }else{
+                            Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
             else{
-                Log.d("Barcode", "Barcode was not scanned successfully")
+                Toast.makeText(context, "Book was not scanned successfully", Toast.LENGTH_SHORT).show()
             }
             viewModel.processBarCode.value = false
         }
@@ -263,7 +284,8 @@ fun LibraryDetailScreen() {
                                 // Check-in button
                                 Button(
                                     onClick = {
-                                        viewModel.checkIn(context)
+                                        // true for check-in
+                                        viewModel.ProcessBook(context, true)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                                     // Uses ButtonDefaults.ContentPadding by default
@@ -286,7 +308,8 @@ fun LibraryDetailScreen() {
                                 // Check-out button
                                 Button(
                                     onClick = {
-                                        viewModel.checkOut()
+                                        // false for checkout
+                                        viewModel.ProcessBook(context, false)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                                     // Uses ButtonDefaults.ContentPadding by default
@@ -384,36 +407,42 @@ fun LibraryDetailScreen() {
                         if(library.books.isNotEmpty()){
                             LazyColumn(
                                 modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 items(library.books) { book ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    Card(modifier = Modifier
+                                        .fillMaxWidth(),
+                                        onClick = { onBookClicked(book.barcode) }
                                     ) {
-                                        Column {
-                                            Text(
-                                                text = book.name,
-                                                style = MaterialTheme.typography.headlineSmall,
-                                                modifier = Modifier.padding(end = 8.dp)
-                                            )
-                                            Text(
-                                                text = book.author,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        Row(
+                                            modifier = Modifier
+                                                .padding(6.dp)
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Column {
+                                                Text(
+                                                    text = book.name,
+                                                    style = MaterialTheme.typography.headlineSmall,
+                                                    modifier = Modifier.padding(end = 8.dp)
+                                                )
+                                                Text(
+                                                    text = book.author,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                                )
+                                            }
+                                            Image(
+                                                painter = rememberAsyncImagePainter(model = book.image),
+                                                contentDescription = "Book cover image",
+                                                modifier = Modifier
+                                                    .size(64.dp)
+                                                    .clip(RoundedCornerShape(4.dp))
                                             )
                                         }
-                                        Image(
-                                            painter = rememberAsyncImagePainter(model = book.image),
-                                            contentDescription = "Book cover image",
-                                            modifier = Modifier
-                                                .size(64.dp)
-                                                .clip(RoundedCornerShape(4.dp))
-                                        )
                                     }
                                 }
                             }

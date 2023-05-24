@@ -2,7 +2,10 @@ package pt.ulisboa.tecnico.cmov.librarist.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+import pt.ulisboa.tecnico.cmov.librarist.utils.BookListConverter
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.BOOK_TABLE
+import pt.ulisboa.tecnico.cmov.librarist.utils.IntListConverter
 
 @Entity(tableName = BOOK_TABLE)
 data class Book(
@@ -10,6 +13,9 @@ data class Book(
     val barcode: String = "",
     val name: String = "",
     val author: String = "",
-    val available: Boolean = true,
+    val notifications: Boolean = false,
+
+    @TypeConverters(IntListConverter::class)
+    var libraries: MutableList<Int> = mutableListOf(),
     val image: ByteArray = byteArrayOf()
 )

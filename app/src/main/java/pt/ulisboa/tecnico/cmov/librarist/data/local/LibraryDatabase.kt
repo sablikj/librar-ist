@@ -8,10 +8,11 @@ import pt.ulisboa.tecnico.cmov.librarist.data.local.dao.LibraryDao
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.BookListConverter
+import pt.ulisboa.tecnico.cmov.librarist.utils.IntListConverter
 import pt.ulisboa.tecnico.cmov.librarist.utils.LatLngConverter
 
 
-@TypeConverters(LatLngConverter::class, BookListConverter::class)
+@TypeConverters(LatLngConverter::class, BookListConverter::class, IntListConverter::class)
 @Database(
     entities = [
         Book::class,

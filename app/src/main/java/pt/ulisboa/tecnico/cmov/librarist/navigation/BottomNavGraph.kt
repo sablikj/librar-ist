@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.LibraryDetailScreen
 import pt.ulisboa.tecnico.cmov.librarist.screens.search.SearchScreen
+import pt.ulisboa.tecnico.cmov.librarist.screens.search.detail.BookDetailScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 
 
@@ -37,7 +38,6 @@ fun BottomNavGraph(navController: NavHostController) {
             MapScreen(
                 state = mapState,
                 onMarkerClicked = { libraryId ->
-                    Log.d("detail", "composable mapscreen")
                     if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
                         navController.navigate("${Constants.Routes.LIBRARY_DETAIL_ROUTE}/$libraryId")
                     }
@@ -52,9 +52,14 @@ fun BottomNavGraph(navController: NavHostController) {
                     type = NavType.IntType
                 }
             ),
-        ) {
-            Log.d("detail", "composable detail")
-            LibraryDetailScreen()
+        ) { backStackEntry ->
+            LibraryDetailScreen(
+                onBookClicked = { barcode ->
+                    if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
+                        navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$barcode")
+                    }
+                }
+            )
         }
         // Book search tab
         composable(route = BottomBarScreen.BookSearch.route){ backStackEntry ->
@@ -63,6 +68,24 @@ fun BottomNavGraph(navController: NavHostController) {
                     // To avoid duplicate navigation events
                     if (backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED) {
                         navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$bookId")
+                    }
+                }
+            )
+        }
+
+        // Book detail
+        composable(
+            route = "${Constants.Routes.BOOK_DETAIL_ROUTE}/{${Constants.Routes.BOOK_DETAIL_ID}}",
+            arguments = listOf(
+                navArgument(Constants.Routes.BOOK_DETAIL_ID) {
+                    type = NavType.StringType
+                }
+            ),
+        ) { backStackEntry ->
+            BookDetailScreen(
+                onLibraryClicked = { libraryId ->
+                    if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
+                        navController.navigate("${Constants.Routes.LIBRARY_DETAIL_ROUTE}/$libraryId")
                     }
                 }
             )
