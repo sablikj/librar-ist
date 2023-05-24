@@ -4,9 +4,9 @@
 * Created as uni project for the LPRO course.
 
 ## Mandatory features
-* At a top level, the app should have two screens: 
-  * a map of available free libraries  - “mapScreen”
-  * a book search screen.  – “searchScreen”
+* Two main screens: 
+  * a map of available free libraries.
+  * a book search screen.
 * The map can be dragged around to show more libraries.
 * The user should be able to center the map on their current location at the press of a button. 
 *	Free libraries should show up on the map with markers. 
@@ -21,6 +21,7 @@
         *	If the code is unknown, create a new book with a title and cover photo (taken from the camera).
     *	A button to check out a book (scan barcode). 
     *	The list of books currently available at the library. 
+        * Tapping a book opens a panel with more information about the book. 	
 * Allow the user to add a new library, with the following information: 
     * A name for the library. 
     * A location (either picked from a map, searched by address, or using current location) 
