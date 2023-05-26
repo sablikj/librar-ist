@@ -24,6 +24,6 @@ object DatabaseModule {
             context,
             LibraryDatabase::class.java,
             DATABASE_NAME
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 }

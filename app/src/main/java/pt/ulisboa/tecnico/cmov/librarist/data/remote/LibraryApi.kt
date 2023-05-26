@@ -22,7 +22,7 @@ interface LibraryApi {
     // Get one library
     @GET("get_library_by_id/{id}/")
     suspend fun getLibraryDetail(
-        @Path("id") id: Int
+        @Path("id") id: String
     ): Response<Library>
 
     // Add library
@@ -32,17 +32,16 @@ interface LibraryApi {
     ): Response<String>
 
     // Update library
-    //TODO: Use PUT or PATCH? - based on API implementation
     @PUT("libs/edit/{id}")
     suspend fun updateLibrary(
-        @Path("id") id: Int,
+        @Path("id") id: String,
         @Body library: Library
     ): Response<String>
 
     //BOOK
 
     // Get one book
-    @GET("books_in_library/{id}/")
+    @GET("get_book_by_barcode/{id}/")
     suspend fun getBook(
         @Path("id") id: String
     ): Response<Book>

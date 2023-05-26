@@ -44,12 +44,13 @@ import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
+import java.util.UUID
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
     state: MapState,
-    onMarkerClicked: (Int) -> Unit,
+    onMarkerClicked: (String) -> Unit,
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current

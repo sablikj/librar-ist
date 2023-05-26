@@ -59,7 +59,7 @@ class Repository @Inject constructor(
             emptyList()
         }
     }
-    suspend fun refreshLibraryDetail(id: Int) {
+    suspend fun refreshLibraryDetail(id: String) {
         try {
             val response = libraryApi.getLibraryDetail(id)
             if(response.isSuccessful && response.body() != null){
@@ -74,7 +74,7 @@ class Repository @Inject constructor(
         }
     }
 
-    fun getLibraryDetail(id: Int): Flow<Library> =
+    fun getLibraryDetail(id: String): Flow<Library> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
 
