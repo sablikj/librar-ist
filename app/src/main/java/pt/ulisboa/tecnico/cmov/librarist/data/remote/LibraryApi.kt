@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.data.remote
 
+import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import retrofit2.Response
@@ -29,14 +30,14 @@ interface LibraryApi {
     @POST("libs")
     suspend fun addLibrary(
         @Body library: Library
-    ): Response<String>
+    ): Response<ResponseBody>
 
     // Update library
     @PUT("libs/edit/{id}")
     suspend fun updateLibrary(
         @Path("id") id: String,
         @Body library: Library
-    ): Response<String>
+    ): Response<ResponseBody>
 
     //BOOK
 
@@ -50,7 +51,7 @@ interface LibraryApi {
     @POST("books")
     suspend fun addBook(
         @Body book: Book
-    ): Response<String>
+    ): Response<ResponseBody>
 
     // Book search
     @GET("books_in_library/?") //TODO: fix

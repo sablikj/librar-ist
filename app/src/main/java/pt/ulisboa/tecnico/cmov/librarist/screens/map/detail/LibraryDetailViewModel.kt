@@ -95,6 +95,7 @@ class LibraryDetailViewModel @Inject constructor(
 
         // Updating library locally
         viewModelScope.launch {
+            // TODO: use checkin api call
             repository.addLibrary(libraryDetail)
         }
     }

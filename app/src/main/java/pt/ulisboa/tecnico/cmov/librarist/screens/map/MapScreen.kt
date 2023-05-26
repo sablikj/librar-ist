@@ -44,7 +44,6 @@ import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
-import java.util.UUID
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -79,16 +78,16 @@ fun MapScreen(
     val photoUri = remember { mutableStateOf<String>("") }
 
     // Permissions
-    var permissionGranted by remember { mutableStateOf(false) }
+    var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
-    permissionGranted = viewModel.checkLocationPermission()
+    locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            permissionGranted = true
+            locationPermissionGranted = true
         } else {
             showDialog = true
         }
@@ -107,7 +106,7 @@ fun MapScreen(
         }
 
     val mapProperties = MapProperties(
-        isMyLocationEnabled = permissionGranted
+        isMyLocationEnabled = locationPermissionGranted
     )
     val mapUiSettings = MapUiSettings(
         zoomControlsEnabled = true,
@@ -124,7 +123,7 @@ fun MapScreen(
                     name = name.value,
                     image = imageBytes,
                     location = viewModel.location.value,
-                    books = mutableListOf() // empty list for now
+                    books = mutableListOf()
                 )
                 viewModel.addLibrary(newLibrary)
                 Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
@@ -134,10 +133,12 @@ fun MapScreen(
             }
         }
     }
+    // Triggered when library photo is converted to byte array
     LaunchedEffect(viewModel.currentImageBytes) {
         viewModel.currentImageBytes.observe(lifecycleOwner, imageObserver)
     }
 
+    // Triggered when imageObserver finishes
     DisposableEffect(imageObserver) {
         onDispose {
             viewModel.currentImageBytes.removeObserver(imageObserver)
@@ -145,7 +146,8 @@ fun MapScreen(
     }
 
     // Getting current location
-    LaunchedEffect(key1 = Unit) {
+    // Triggered when location permission is granted or on permission check
+    LaunchedEffect(locationPermissionGranted) {
         // Location permission
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -159,6 +161,7 @@ fun MapScreen(
         cameraPositionState.position = CameraPosition.fromLatLngZoom(state.lastKnownLocation, 18f)
     }
 
+    // Triggered when lastKnownLocation is updated
     LaunchedEffect(lastKnownLocation) {
         lastKnownLocation?.let { location ->
             val latLng = LatLng(location.latitude, location.longitude)
@@ -216,7 +219,7 @@ fun MapScreen(
                     )
                 }
             }
-
+            
             LaunchedEffect(state.lastKnownLocation) {
                 state.lastKnownLocation.let { location ->
                     cameraPositionState.centerOnLocation(scope, location)

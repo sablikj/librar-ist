@@ -23,7 +23,7 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 @OptIn(ExperimentalPagingApi::class, ExperimentalCoilApi::class)
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
-    //TODO: Load saved lastLocation | Replace with your actual last known location
+    // Default location used when permissions are not granted
     val lastKnownLocation: LatLng = LatLng( 38.736946,  -9.142685)
 
     // Construct your MapState
