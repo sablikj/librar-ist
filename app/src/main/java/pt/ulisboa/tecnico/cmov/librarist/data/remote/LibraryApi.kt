@@ -12,8 +12,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LibraryApi {
-    //TODO: add api calls
-
     //LIBRARY
 
     // All libraries
@@ -54,7 +52,7 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // Book search
-    @GET("books_in_library/?") //TODO: fix
+    @GET("books_in_library/?") //TODO: update
     suspend fun searchBooks(
         @Query("search") query: String
     ): Response<List<Book>>

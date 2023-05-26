@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -219,12 +220,6 @@ fun MapScreen(
                     )
                 }
             }
-            
-            LaunchedEffect(state.lastKnownLocation) {
-                state.lastKnownLocation.let { location ->
-                    cameraPositionState.centerOnLocation(scope, location)
-                }
-            }
         }
         FloatingActionButton(
             modifier = Modifier
@@ -249,7 +244,8 @@ fun MapScreen(
             }
             // Open only if Camera and storage permissions are granted
             if(camStorGranted){
-                ComposeMapCenterPointMapMarker(scope, showLibraryDialog, state.lastKnownLocation, viewModel.location, showPin)
+                ComposeMapCenterPointMapMarker(scope, showLibraryDialog,
+                    lastKnownLocation!!, viewModel.location, showPin)
             }
         }
 
@@ -286,16 +282,16 @@ fun MapScreen(
 fun ComposeMapCenterPointMapMarker(
     scope:CoroutineScope,
     showForm: MutableState<Boolean>,
-    currentLocation: LatLng,
+    currentLocation: Location,
     location: MutableState<LatLng>,
     showPin: MutableState<Boolean>
 ){
     val shouldDismiss = remember { mutableStateOf(false) }
+    val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
 
-    //TODO: should be current location
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 18f)
-        centerOnLocation(scope, currentLocation)
+        position = CameraPosition.fromLatLngZoom(loc, 18f)
+        centerOnLocation(scope, loc)
     }
 
     // Returning values
