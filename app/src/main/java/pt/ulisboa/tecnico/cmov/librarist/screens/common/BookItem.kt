@@ -1,17 +1,21 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.common
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,8 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
@@ -44,10 +51,13 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
         contentScale = ContentScale.Fit
     )
 
+    fun onNotificationClicked(): Unit {
+
+    }
     ElevatedCard(
         onClick = { onDetailClicked(book.barcode) },
         colors = CardDefaults.cardColors(
-            containerColor =  MaterialTheme.colorScheme.primary,
+            containerColor = MaterialTheme.colorScheme.primary,
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -65,6 +75,14 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
                     contentScale = ContentScale.Crop,
 
                     )
+                // Notification icon
+                ClickableImageView(
+                    imageResId = R.drawable.notification,
+                    imageSize = 50.dp,
+                    onClick = {
+                        onNotificationClicked()
+                    }
+                )
                 // Name
                 Row(
                     modifier = Modifier
@@ -105,5 +123,28 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ClickableImageView(
+    imageResId: Int,
+    imageSize: Dp,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .size(imageSize)
+            .clickable { onClick.invoke() },
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Image(
+            painter = painterResource(imageResId),
+            contentDescription = null,
+            modifier = Modifier
+                .aspectRatio(1f)
+                .padding(4.dp),
+            contentScale = ContentScale.Crop
+        )
     }
 }

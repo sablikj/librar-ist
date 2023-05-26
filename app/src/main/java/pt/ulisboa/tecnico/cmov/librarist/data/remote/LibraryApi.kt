@@ -47,6 +47,11 @@ interface LibraryApi {
         @Path("id") id: String
     ): Response<Book>
 
+    @GET("/get_book_by_title?title=")
+    suspend fun getBookByTitle(
+        @Query("title") title: String
+    ): Response<Book>
+
     // Add book
     @POST("books")
     suspend fun addBook(
