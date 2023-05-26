@@ -276,6 +276,7 @@ fun LibraryDetailScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(4.dp)
                                     .background(MaterialTheme.colorScheme.secondaryContainer),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,

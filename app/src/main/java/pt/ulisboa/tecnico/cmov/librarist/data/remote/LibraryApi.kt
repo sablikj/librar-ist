@@ -16,28 +16,28 @@ interface LibraryApi {
     //LIBRARY
 
     // All libraries
-    @GET("libraries")
+    @GET("libs")
     suspend fun getLibraries(): Response<List<Library>>
 
     // Get one library
-    @GET("libraries/{id}/")
+    @GET("get_library_by_id/{id}/")
     suspend fun getLibraryDetail(
         @Path("id") id: Int
     ): Response<Library>
 
     // Add library
-    @POST("libraries")
+    @POST("libs")
     suspend fun addLibrary(
         @Body library: Library
-    ): Response<Library>
+    ): Response<String>
 
     // Update library
     //TODO: Use PUT or PATCH? - based on API implementation
-    @PUT("libraries/{id}")
+    @PUT("libs/edit/{id}")
     suspend fun updateLibrary(
         @Path("id") id: Int,
         @Body library: Library
-    ): Response<Library>
+    ): Response<String>
 
     //BOOK
 
@@ -48,13 +48,13 @@ interface LibraryApi {
     ): Response<Book>
 
     // Add book
-    @POST("books_in_library")
+    @POST("books")
     suspend fun addBook(
         @Body book: Book
-    ): Response<Book>
+    ): Response<String>
 
     // Book search
-    @GET("books_in_library/?")
+    @GET("books_in_library/?") //TODO: fix
     suspend fun searchBooks(
         @Query("search") query: String
     ): Response<List<Book>>
