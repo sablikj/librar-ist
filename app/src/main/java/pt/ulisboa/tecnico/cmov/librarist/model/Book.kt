@@ -14,7 +14,7 @@ data class Book(
     val name: String = "",
     val author: String = "",
     val notifications: Boolean = false,
-    val available:Boolean?,
+    val available: Boolean? = false,
 
     @TypeConverters(IntListConverter::class)
     var libraries: MutableList<Int> = mutableListOf(),
