@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +46,7 @@ import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
+import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -93,6 +95,7 @@ fun MapScreen(
             showDialog = true
         }
     }
+
 
     val requestMultiplePermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -203,8 +206,21 @@ fun MapScreen(
                         state = MarkerState(position = library.location),
                         title = library.name,
                         onInfoWindowClick = {
+
+                            // Open only if Camera and storage permissions are granted
                             scope.launch {
-                                onMarkerClicked(library.id)
+                                // Check camera permission first
+                                if(!camStorGranted){
+                                    //TODO: fix permissions when navigating to the detail
+                                    Log.d("Permissionss", "test")
+                                    val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    requestMultiplePermissions.launch(permissions)
+                                }else{
+                                    camStorGranted = true
+                                }
+                                if(camStorGranted) {
+                                    onMarkerClicked(library.id)
+                                }
                             }
                         }
                     )

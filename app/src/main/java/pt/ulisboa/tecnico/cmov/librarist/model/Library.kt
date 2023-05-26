@@ -7,22 +7,15 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
-import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.utils.BookListConverter
+import pt.ulisboa.tecnico.cmov.librarist.utils.ByteArrayBase64Serializer
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.LIBRARY_TABLE
 import pt.ulisboa.tecnico.cmov.librarist.utils.LatLngConverter
-import pt.ulisboa.tecnico.cmov.librarist.utils.UUIDConverter
-import java.util.Base64
 import java.util.UUID
 @Serializable
 @Entity(tableName = LIBRARY_TABLE)
@@ -39,6 +32,11 @@ data class Library(
     var books: MutableList<Book> = mutableListOf(), // All books in the library (available or not)
     var favourite: Boolean = false // Local storage only
 )
+@Serializable
+data class LibraryListResponse(var data: List<Library>)
+@Serializable
+data class LibraryResponse(var data: Library)
+//TODO: prompt for permissions when checking in/out books
 
 object LatLngSerializer : KSerializer<LatLng> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("location", PrimitiveKind.STRING)
@@ -48,21 +46,8 @@ object LatLngSerializer : KSerializer<LatLng> {
     }
 
     override fun deserialize(decoder: Decoder): LatLng {
-        val (lat, lon) = decoder.decodeString().split(',').map { it.toDouble() }
-        return LatLng(lat, lon)
-    }
-}
-
-
-object ByteArrayBase64Serializer: KSerializer<ByteArray> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("photo", PrimitiveKind.STRING)
-    override fun serialize(encoder: Encoder, value: ByteArray) {
-        val base64String = Base64.getEncoder().encodeToString(value)
-        encoder.encodeString(base64String)
-    }
-
-    override fun deserialize(decoder: Decoder): ByteArray {
-        val base64String = decoder.decodeString()
-        return Base64.getDecoder().decode(base64String)
+        val latLngAsString = decoder.decodeString()
+        val (latitude, longitude) = latLngAsString.split(",").map { it.toDouble() }
+        return LatLng(latitude, longitude)
     }
 }

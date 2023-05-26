@@ -3,12 +3,14 @@ package pt.ulisboa.tecnico.cmov.librarist.data.remote
 import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LibraryApi {
@@ -16,13 +18,13 @@ interface LibraryApi {
 
     // All libraries
     @GET("libs")
-    suspend fun getLibraries(): Response<List<Library>>
+    suspend fun getLibraries(): Response<LibraryListResponse>
 
     // Get one library
-    @GET("get_library_by_id/{id}/")
+    @GET("get_library_by_id")
     suspend fun getLibraryDetail(
-        @Path("id") id: String
-    ): Response<Library>
+        @Query("id") id: String
+    ): Response<LibraryResponse>
 
     // Add library
     @POST("libs")
@@ -31,18 +33,18 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // Update library
-    @PUT("libs/edit/{id}")
+    @PATCH("libs/edit")
     suspend fun updateLibrary(
-        @Path("id") id: String,
+        @Query("id") id: String,
         @Body library: Library
     ): Response<ResponseBody>
 
     //BOOK
 
     // Get one book
-    @GET("get_book_by_barcode/{id}/")
+    @GET("get_book_by_barcode")
     suspend fun getBook(
-        @Path("id") id: String
+        @Query("barcode") id: String
     ): Response<Book>
 
     // Add book
