@@ -4,6 +4,20 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+
+class IntListConverter {
+    @TypeConverter
+    fun fromIntList(vals: List<Int>?): String? {
+        return vals?.joinToString(",")
+    }
+
+    @TypeConverter
+    fun toIntList(intString: String?): List<Int>? {
+        return intString?.split(",")?.map { it.toInt() }
+    }
+}
+
+/*
 class IntListConverter {
     @TypeConverter
     fun fromIntList(vals: List<Int>?): String? {
@@ -25,3 +39,4 @@ class IntListConverter {
         return gson.fromJson(intString, type)
     }
 }
+*/

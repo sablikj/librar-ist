@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast

@@ -28,6 +28,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,7 +46,7 @@ class LibraryDetailViewModel @Inject constructor(
     val processBarCode = mutableStateOf(false)
 
     val loading = mutableStateOf(false)
-    val libraryId = savedStateHandle.get<Int>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
+    val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
 
     var libraryDetail by mutableStateOf(Library())
 
@@ -94,6 +95,7 @@ class LibraryDetailViewModel @Inject constructor(
 
         // Updating library locally
         viewModelScope.launch {
+            // TODO: use checkin api call
             repository.addLibrary(libraryDetail)
         }
     }

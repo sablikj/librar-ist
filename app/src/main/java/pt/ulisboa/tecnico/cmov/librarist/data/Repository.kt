@@ -38,34 +38,39 @@ class Repository @Inject constructor(
     }
 
     suspend fun getLibraries(): List<Library> {
+        // get libraries from api
+        try {
+            val response = libraryApi.getLibraries()
+            if(response.isSuccessful && response.body() != null){
+                // If the API call is successful, update the local database and return the libraries
+                val libraries = response.body()?.data ?: emptyList()
+                libraryDao.addLibraries(libraries)
+                return libraries
+            } else {
+                return emptyList()
+            }
+        } catch (e: Exception) {
+            Log.d("getLibraries", "Error during GET: $e")
+        }
         val localLibraries = libraryDao.getLibraries()
 
         // If the local database is not empty, return the libraries from it
         if (localLibraries.isNotEmpty()) {
             return localLibraries
         }
-
-        // If the local database is empty, make the API call
-        return try {
-            val response = libraryApi.getLibraries()
-            if(response.isSuccessful && response.body() != null){
-                // If the API call is successful, update the local database and return the libraries
-                libraryDao.addLibraries(response.body()!!)
-                response.body()!!
-            } else {
-                emptyList()
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
+        return localLibraries
     }
-    suspend fun refreshLibraryDetail(id: Int) {
+    suspend fun refreshLibraryDetail(id: String) {
         try {
             val response = libraryApi.getLibraryDetail(id)
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the libraries
-                libraryDao.insert(response.body()!!)
-                response.body()!!
+                val library = response.body()?.data
+                if (library != null) {
+                    libraryDao.insert(library)
+                }else{
+                    Log.d("API", "Failed to fetch the data.")
+                }
             } else {
                 Log.d("API", "Failed to fetch the data.")
             }
@@ -74,7 +79,7 @@ class Repository @Inject constructor(
         }
     }
 
-    fun getLibraryDetail(id: Int): Flow<Library> =
+    fun getLibraryDetail(id: String): Flow<Library> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
 

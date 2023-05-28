@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.ExperimentalPagingApi
+import coil.annotation.ExperimentalCoilApi
 import com.google.android.gms.maps.model.LatLng
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapState
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.MapScreen
@@ -19,10 +20,10 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.search.detail.BookDetailScreen
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 
 
-@OptIn(ExperimentalPagingApi::class)
+@OptIn(ExperimentalPagingApi::class, ExperimentalCoilApi::class)
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
-    //TODO: Load saved lastLocation | Replace with your actual last known location
+    // Default location used when permissions are not granted
     val lastKnownLocation: LatLng = LatLng( 38.736946,  -9.142685)
 
     // Construct your MapState
@@ -49,7 +50,7 @@ fun BottomNavGraph(navController: NavHostController) {
             route = "${Constants.Routes.LIBRARY_DETAIL_ROUTE}/{${Constants.Routes.LIBRARY_DETAIL_ID}}",
             arguments = listOf(
                 navArgument(Constants.Routes.LIBRARY_DETAIL_ID) {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 }
             ),
         ) { backStackEntry ->

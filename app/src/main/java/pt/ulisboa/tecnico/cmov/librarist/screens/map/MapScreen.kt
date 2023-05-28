@@ -3,6 +3,8 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,12 +46,13 @@ import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
+import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
     state: MapState,
-    onMarkerClicked: (Int) -> Unit,
+    onMarkerClicked: (String) -> Unit,
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -78,20 +81,21 @@ fun MapScreen(
     val photoUri = remember { mutableStateOf<String>("") }
 
     // Permissions
-    var permissionGranted by remember { mutableStateOf(false) }
+    var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
-    permissionGranted = viewModel.checkLocationPermission()
+    locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            permissionGranted = true
+            locationPermissionGranted = true
         } else {
             showDialog = true
         }
     }
+
 
     val requestMultiplePermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -106,7 +110,7 @@ fun MapScreen(
         }
 
     val mapProperties = MapProperties(
-        isMyLocationEnabled = permissionGranted
+        isMyLocationEnabled = locationPermissionGranted
     )
     val mapUiSettings = MapUiSettings(
         zoomControlsEnabled = true,
@@ -123,7 +127,7 @@ fun MapScreen(
                     name = name.value,
                     image = imageBytes,
                     location = viewModel.location.value,
-                    books = mutableListOf() // empty list for now
+                    books = mutableListOf()
                 )
                 viewModel.addLibrary(newLibrary)
                 Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
@@ -133,10 +137,12 @@ fun MapScreen(
             }
         }
     }
+    // Triggered when library photo is converted to byte array
     LaunchedEffect(viewModel.currentImageBytes) {
         viewModel.currentImageBytes.observe(lifecycleOwner, imageObserver)
     }
 
+    // Triggered when imageObserver finishes
     DisposableEffect(imageObserver) {
         onDispose {
             viewModel.currentImageBytes.removeObserver(imageObserver)
@@ -144,7 +150,8 @@ fun MapScreen(
     }
 
     // Getting current location
-    LaunchedEffect(key1 = Unit) {
+    // Triggered when location permission is granted or on permission check
+    LaunchedEffect(locationPermissionGranted) {
         // Location permission
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -158,6 +165,7 @@ fun MapScreen(
         cameraPositionState.position = CameraPosition.fromLatLngZoom(state.lastKnownLocation, 18f)
     }
 
+    // Triggered when lastKnownLocation is updated
     LaunchedEffect(lastKnownLocation) {
         lastKnownLocation?.let { location ->
             val latLng = LatLng(location.latitude, location.longitude)
@@ -198,8 +206,21 @@ fun MapScreen(
                         state = MarkerState(position = library.location),
                         title = library.name,
                         onInfoWindowClick = {
+
+                            // Open only if Camera and storage permissions are granted
                             scope.launch {
-                                onMarkerClicked(library.id)
+                                // Check camera permission first
+                                if(!camStorGranted){
+                                    //TODO: fix permissions when navigating to the detail
+                                    Log.d("Permissionss", "test")
+                                    val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    requestMultiplePermissions.launch(permissions)
+                                }else{
+                                    camStorGranted = true
+                                }
+                                if(camStorGranted) {
+                                    onMarkerClicked(library.id)
+                                }
                             }
                         }
                     )
@@ -213,12 +234,6 @@ fun MapScreen(
                             }
                         }
                     )
-                }
-            }
-
-            LaunchedEffect(state.lastKnownLocation) {
-                state.lastKnownLocation.let { location ->
-                    cameraPositionState.centerOnLocation(scope, location)
                 }
             }
         }
@@ -245,7 +260,8 @@ fun MapScreen(
             }
             // Open only if Camera and storage permissions are granted
             if(camStorGranted){
-                ComposeMapCenterPointMapMarker(scope, showLibraryDialog, state.lastKnownLocation, viewModel.location, showPin)
+                ComposeMapCenterPointMapMarker(scope, showLibraryDialog,
+                    lastKnownLocation!!, viewModel.location, showPin)
             }
         }
 
@@ -282,16 +298,16 @@ fun MapScreen(
 fun ComposeMapCenterPointMapMarker(
     scope:CoroutineScope,
     showForm: MutableState<Boolean>,
-    currentLocation: LatLng,
+    currentLocation: Location,
     location: MutableState<LatLng>,
     showPin: MutableState<Boolean>
 ){
     val shouldDismiss = remember { mutableStateOf(false) }
+    val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
 
-    //TODO: should be current location
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 18f)
-        centerOnLocation(scope, currentLocation)
+        position = CameraPosition.fromLatLngZoom(loc, 18f)
+        centerOnLocation(scope, loc)
     }
 
     // Returning values
