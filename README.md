@@ -1,7 +1,7 @@
 # Librar IST
 
 * Android app for managing and crowd-sourcing free libraries. Uses [Android JetPack Compose](https://developer.android.com/jetpack) with Material 3.
-* Created as uni project for the LPRO course.
+* Created as uni project for the CMU course.
 
 ## Mandatory features
 ### TODO
