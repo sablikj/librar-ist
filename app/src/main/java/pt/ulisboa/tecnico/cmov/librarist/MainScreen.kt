@@ -16,6 +16,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination
@@ -23,6 +24,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.android.libraries.places.api.Places
 import pt.ulisboa.tecnico.cmov.librarist.navigation.BottomBarScreen
 import pt.ulisboa.tecnico.cmov.librarist.navigation.BottomNavGraph
 
@@ -32,6 +34,9 @@ import pt.ulisboa.tecnico.cmov.librarist.navigation.BottomNavGraph
 fun MainScreen(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Initialize the Places SDK
+    Places.initialize(LocalContext.current, BuildConfig.GOOGLE_API_KEY)
 
     Scaffold(
         topBar = {
