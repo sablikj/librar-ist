@@ -5,7 +5,6 @@
 
 ## Mandatory features
 ### TODO
-* **(Map tab)** Search bar to lookup and center the map on a given address
 * **(Book detail)** A button to enable/ disable notifications of when the book becomes available in one of the user’s favorite libraries
 * **(Book detail)**	A list of libraries where the book is available indicating how far away they are and sorted by this distance
 * **(Book detail)**	Tapping a library brings up its information panel 
@@ -23,6 +22,7 @@
   * a book search screen.
 * The map can be dragged around to show more libraries.
 * The user should be able to center the map on their current location at the press of a button. 
+* Map has search bar to lookup and center the map on a given address
 *	Free libraries should show up on the map with markers. 
 *	The user’s favorite libraries should be highlighted with a different marker. 
 *	Tapping a marker goes to the respective library’s information panel, which should include the following: 
@@ -58,6 +58,7 @@
 * Coil
 * [Bar Code Scanner](https://developers.google.com/ml-kit/vision/barcode-scanning/code-scanner)
 * [Maps SDK](https://developers.google.com/maps/documentation/android-sdk/overview)
+* [Places SDK](https://developers.google.com/maps/documentation/places/android-sdk/overview)
 * [Gson](https://github.com/google/gson)
 
 
