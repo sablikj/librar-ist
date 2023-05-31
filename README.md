@@ -56,8 +56,8 @@
 * CameraX
 * Dagger - Hilt
 * Coil
-* Bar Code Scanner
-* Maps SDK
+* [Bar Code Scanner](https://developers.google.com/ml-kit/vision/barcode-scanning/code-scanner)
+* [Maps SDK](https://developers.google.com/maps/documentation/android-sdk/overview)
 * [Gson](https://github.com/google/gson)
 
 
