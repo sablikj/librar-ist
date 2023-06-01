@@ -4,23 +4,33 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,6 +38,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -39,6 +50,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -48,6 +60,8 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
@@ -85,6 +99,12 @@ fun MapScreen(
     var camStorGranted by remember { mutableStateOf(false) }
     locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
+
+    // Searchbar
+    var searchText by remember { mutableStateOf("") }
+    var searchActive by remember { mutableStateOf(false) }
+    val searchPredictions = remember { mutableStateListOf<AutocompletePrediction>() }
+    val searchLocation by viewModel.searchLocation.observeAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -137,6 +157,20 @@ fun MapScreen(
             }
         }
     }
+
+    // Triggered when search location is updated
+    searchLocation?.let { latLng ->
+        LaunchedEffect(latLng) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 18f)
+
+            // updating last known location (for new library map overlay)
+            val newLocation = Location(LocationManager.GPS_PROVIDER)
+            newLocation.latitude = latLng.latitude
+            newLocation.longitude = latLng.longitude
+            viewModel.lastKnownLocation.value = newLocation
+        }
+    }
+
     // Triggered when library photo is converted to byte array
     LaunchedEffect(viewModel.currentImageBytes) {
         viewModel.currentImageBytes.observe(lifecycleOwner, imageObserver)
@@ -190,12 +224,72 @@ fun MapScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        SearchBar(
+            modifier = Modifier.align(Alignment.TopCenter),
+            query = searchText,
+            onQueryChange = { query ->
+                searchText = query
+                if (query.isNotBlank()) {
+                    viewModel.getPredictions(query) { result ->
+                        searchPredictions.clear()
+                        result?.forEach { prediction ->
+                            searchPredictions.add(prediction)
+                        }
+                    }
+                }
+            },
+            onSearch = {
+                searchActive = false
+            },
+            active = searchActive,
+            onActiveChange = {
+                searchActive = it
+            },
+            placeholder = {
+                Text(text = "Search")
+            },
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
+            },
+            trailingIcon = {
+                if(searchActive){
+                    Icon(
+                        modifier = Modifier.clickable {
+                            if(searchText.isNotEmpty()){
+                                searchText = ""
+                            }else{
+                                searchActive = false
+                            }
+                        },
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close icon"
+                    )
+                }
+            }
+        ) {
+            LazyColumn {
+                items(searchPredictions) { prediction ->
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
+                            .clickable {
+                                viewModel.fetchPlaceDetails(prediction.placeId)
+                                searchActive = false
+                                searchText = ""
+                                searchPredictions.clear()
+                            },
+                        text = prediction.getPrimaryText(null).toString(),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             properties = mapProperties,
             cameraPositionState = cameraPositionState,
             uiSettings = mapUiSettings,
-            contentPadding = PaddingValues(0.dp,0.dp,8.dp,64.dp)
+            contentPadding = PaddingValues(0.dp,64.dp,8.dp,64.dp)
 
         ) {
             // Adding library markers

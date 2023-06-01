@@ -20,12 +20,21 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.Task
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +42,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
@@ -64,6 +74,9 @@ class MapViewModel @Inject constructor(application: Application,
         )
     )
 
+    // Places API
+    private val placesClient = Places.createClient(application.applicationContext)
+
     // Markers
     val location = mutableStateOf(LatLng(0.0, 0.0))
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
@@ -78,6 +91,8 @@ class MapViewModel @Inject constructor(application: Application,
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
+
+    var searchLocation = MutableLiveData<LatLng?>(null)
 
 
     // Converting URI to byteArray
@@ -201,5 +216,40 @@ class MapViewModel @Inject constructor(application: Application,
             Log.d("geolocation", e.message.toString())
         }
         return addressText
+    }
+
+    fun getAutocompletePredictions(
+        query: String
+    ): Task<FindAutocompletePredictionsResponse> {
+        val requestBuilder = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+        return placesClient.findAutocompletePredictions(requestBuilder.build())
+    }
+
+    fun getPredictions(query: String, callback: (List<AutocompletePrediction>) -> Unit) {
+        getAutocompletePredictions(query)
+            .addOnSuccessListener { response ->
+                val predictions = response.autocompletePredictions
+                callback(predictions)
+            }
+            .addOnFailureListener { exception ->
+                if (exception is ApiException) {
+                    Log.e("searchbar", "Place not found: " + exception.statusCode)
+                }
+            }
+    }
+
+    fun fetchPlaceDetails(placeId: String) {
+        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+
+        val fetchPlaceRequest = FetchPlaceRequest.newInstance(placeId, placeFields)
+        placesClient.fetchPlace(fetchPlaceRequest)
+            .addOnSuccessListener { response ->
+                searchLocation.value = response.place.latLng
+            }.addOnFailureListener { exception ->
+                if (exception is ApiException) {
+                    Log.e("searchbar", "Place not found: " + exception.statusCode)
+                }
+            }
     }
 }
