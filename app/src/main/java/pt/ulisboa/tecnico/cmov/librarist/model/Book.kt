@@ -18,17 +18,9 @@ data class Book(
     val name: String = "",
     val author: String = "",
     val notifications: Boolean = false,
-    @SerialName("libraryId")
-    var libraryId: String="",
+
+    @TypeConverters(IntListConverter::class) @SerialName("libraryId")
+    var libraries: MutableList<Int> = mutableListOf(),
     @SerialName("photo") @Serializable(with = ByteArrayBase64Serializer::class)
     val image: ByteArray = byteArrayOf()
 )
-
-@Serializable
-data class BookListResponse(
-    @SerialName("data")
-    var data: List<Book>
-)
-
-@Serializable
-data class BookResponse(var data: List<Book>)
