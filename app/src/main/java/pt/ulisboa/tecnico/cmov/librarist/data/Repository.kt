@@ -60,6 +60,31 @@ class Repository @Inject constructor(
         }
         return localLibraries
     }
+
+    suspend fun getBooksInLibraries(id: String): List<Book> {
+        // get books from api
+        try {
+            val response = libraryApi.getBooksInLibrary(id)
+            if (response.isSuccessful && response.body() != null) {
+                // If the API call is successful, update the local database and return the libraries
+                val books = response.body()?.data ?: emptyList()
+                bookDao.addBooks(books)
+                return books
+            } else {
+                return emptyList()
+            }
+        } catch (e: Exception) {
+            Log.d("getBooks", "Error during GET: $e")
+        }
+        val localBooks = bookDao.getBooks()
+
+        // If the local database is not empty, return the libraries from it
+        if (localBooks.isNotEmpty()) {
+            return localBooks
+        }
+        return localBooks
+    }
+
     suspend fun refreshLibraryDetail(id: String) {
         try {
             val response = libraryApi.getLibraryDetail(id)
