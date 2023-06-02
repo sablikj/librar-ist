@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
@@ -41,8 +40,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,7 +51,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
@@ -71,15 +67,18 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
-import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
+import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.centerOnLocation
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.ui.text.style.TextAlign
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -103,8 +102,6 @@ fun LibraryDetailScreen(
     val showCamera = remember { mutableStateOf(false) }
     val stopCamera = remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val books by viewModel.books.collectAsState()
 
     // New book form
     val name = remember { mutableStateOf("") }
@@ -151,7 +148,7 @@ fun LibraryDetailScreen(
                         image = imageBytes,
                         author = author.value,
                         notifications = false,
-                        libraryId = library.id
+                        libraries = mutableListOf()
                     )
                 }
                 if (newBook != null) {
@@ -408,18 +405,15 @@ fun LibraryDetailScreen(
                                 fontWeight = FontWeight.Bold,
                             )
                         }
-                        LaunchedEffect(books.size) {
-                            viewModel.getBooksInLibrary(library.id)
-                        }
                         //Available books
-                        if (books.isNotEmpty()) {
+                        if(library.books.isNotEmpty()){
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                items(books) { book ->
+                                items(library.books) { book ->
                                     Card(modifier = Modifier
                                         .fillMaxWidth(),
                                         onClick = { onBookClicked(book.barcode) }

@@ -2,7 +2,6 @@ package pt.ulisboa.tecnico.cmov.librarist.data.remote
 
 import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
-import pt.ulisboa.tecnico.cmov.librarist.model.BookListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
@@ -12,7 +11,6 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LibraryApi {
@@ -56,6 +54,8 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // Book search
-    @GET("books_in_library/{id}")
-    suspend fun getBooksInLibrary(@Path("id") id: String): Response<BookListResponse>
+    @GET("books_in_library/?") //TODO: update
+    suspend fun searchBooks(
+        @Query("search") query: String
+    ): Response<List<Book>>
 }
