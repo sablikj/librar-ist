@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import pt.ulisboa.tecnico.cmov.librarist.utils.ByteArrayBase64Serializer
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.BOOK_TABLE
+import pt.ulisboa.tecnico.cmov.librarist.utils.IntToBooleanSerializer
 
 @Serializable
 @Entity(tableName = BOOK_TABLE)
@@ -18,6 +19,8 @@ data class Book(
     val notifications: Boolean = false,
     @SerialName("libraryId")
     var libraryId: String="",
+    @SerialName("available") @Serializable(with = IntToBooleanSerializer::class)
+    var available: Boolean = true,
     @SerialName("photo") @Serializable(with = ByteArrayBase64Serializer::class)
     val image: ByteArray = byteArrayOf()
 )

@@ -111,6 +111,7 @@ fun LibraryDetailScreen(
     // New book form
     val name = remember { mutableStateOf("") }
     val author = remember { mutableStateOf("") }
+    val available=remember { mutableStateOf(true) }
     val photoUri = remember { mutableStateOf("") }
 
     LaunchedEffect(viewModel.libraryDetail.location) {
@@ -153,6 +154,7 @@ fun LibraryDetailScreen(
                         image = imageBytes,
                         author = author.value,
                         notifications = false,
+                        available = available.value,
                         libraryId = library.id
                     )
                 }
