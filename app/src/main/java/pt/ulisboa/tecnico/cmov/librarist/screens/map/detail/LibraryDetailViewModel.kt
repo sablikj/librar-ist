@@ -21,6 +21,9 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
@@ -28,7 +31,6 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,6 +51,13 @@ class LibraryDetailViewModel @Inject constructor(
     val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
 
     var libraryDetail by mutableStateOf(Library())
+    private val _books = MutableStateFlow<List<Book>>(emptyList())
+    val books: StateFlow<List<Book>> = _books
+
+    fun onBooksChanged(books: List<Book>) {
+        _books.value = books
+    }
+
 
     // Bar code scanner
     private val options = GmsBarcodeScannerOptions.Builder()
@@ -62,8 +71,11 @@ class LibraryDetailViewModel @Inject constructor(
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 repository.refreshLibraryDetail(libraryId)
+                //get books for library
+                val currentBooks =getBooksInLibrary(libraryId)
+                onBooksChanged(currentBooks)
                 // TODO: call getLibrary instead
-                repository.getLibraryDetail(it).collect {detail ->
+                repository.getLibraryDetail(it).collect { detail ->
                     withContext(Dispatchers.Main) {
                         libraryDetail = detail
                         loading.value = false
@@ -165,5 +177,19 @@ class LibraryDetailViewModel @Inject constructor(
             repository.addBook(book)
             repository.updateLibrary(libraryDetail)
         }
+    }
+
+    //get books by Library
+    suspend fun getBooksInLibrary(id: String):List<Book> {
+        var books= emptyList<Book>()
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                books =repository.getBooksInLibraries(id)
+                onBooksChanged(books)
+            } catch (t: Throwable) {
+                Log.d("ErrorLaunchDetail", t.toString())
+            }
+        }
+        return books;
     }
 }
