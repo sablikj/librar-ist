@@ -127,7 +127,7 @@ fun BookDetailScreen(
                         }
                     }
                     // Other libraries card
-                    if (book.libraries.isNotEmpty()) {
+                    if (book.libraryId.isNotEmpty()) {
                         ElevatedCard(
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
