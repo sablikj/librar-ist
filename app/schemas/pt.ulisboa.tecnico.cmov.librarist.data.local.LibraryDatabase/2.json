@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "286b1cb6b37a27b452e8fe2055f93cd8",
+    "identityHash": "75287e0f860d6612167c40c3b29398c4",
     "entities": [
       {
         "tableName": "book_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcode` TEXT NOT NULL, `name` TEXT NOT NULL, `author` TEXT NOT NULL, `notifications` INTEGER NOT NULL, `libraries` TEXT NOT NULL, `image` BLOB NOT NULL, PRIMARY KEY(`barcode`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcode` TEXT NOT NULL, `name` TEXT NOT NULL, `author` TEXT NOT NULL, `notifications` INTEGER NOT NULL, `libraryId` TEXT NOT NULL, `image` BLOB NOT NULL, PRIMARY KEY(`barcode`))",
         "fields": [
           {
             "fieldPath": "barcode",
@@ -33,14 +33,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "available",
-            "columnName": "available",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "libraries",
-            "columnName": "libraries",
+            "fieldPath": "libraryId",
+            "columnName": "libraryId",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -114,7 +108,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '286b1cb6b37a27b452e8fe2055f93cd8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '75287e0f860d6612167c40c3b29398c4')"
     ]
   }
 }
