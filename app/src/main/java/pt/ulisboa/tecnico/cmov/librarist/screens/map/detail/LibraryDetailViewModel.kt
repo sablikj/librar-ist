@@ -20,6 +20,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,15 +42,12 @@ class LibraryDetailViewModel @Inject constructor(
 ): ViewModel() {
 
     val scanResult = MutableLiveData<String>()
-
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
     val showBookDialog = mutableStateOf(false)
     val checkIn = mutableStateOf(false)
     val processBarCode = mutableStateOf(false)
-
     val loading = mutableStateOf(false)
     val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
-
     var libraryDetail by mutableStateOf(Library())
     private val _books = MutableStateFlow<List<Book>>(emptyList())
     val books: StateFlow<List<Book>> = _books
@@ -57,7 +55,6 @@ class LibraryDetailViewModel @Inject constructor(
     fun onBooksChanged(books: List<Book>) {
         _books.value = books
     }
-
 
     // Bar code scanner
     private val options = GmsBarcodeScannerOptions.Builder()
@@ -72,7 +69,7 @@ class LibraryDetailViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 repository.refreshLibraryDetail(libraryId)
                 //get books for library
-                val currentBooks =getBooksInLibrary(libraryId)
+                val currentBooks = getBooksInLibrary(libraryId)
                 onBooksChanged(currentBooks)
                 // TODO: call getLibrary instead
                 repository.getLibraryDetail(it).collect { detail ->
@@ -154,12 +151,6 @@ class LibraryDetailViewModel @Inject constructor(
                 val outputStream = ByteArrayOutputStream()
                 resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
 
-                // Calculate size in megabytes
-                val sizeInMb = outputStream.size() / 1024.0 / 1024.0
-
-                // Log the size of the resulting byte array
-                Log.d("ImageCompression", "Compressed image size: $sizeInMb MB")
-
                 return@withContext outputStream.toByteArray()
             } finally {
                 // Ensure the ParcelFileDescriptor is closed
@@ -170,21 +161,25 @@ class LibraryDetailViewModel @Inject constructor(
 
     fun addNewBook(book: Book){
         // Adding book to the library
-        libraryDetail.books.add(book)
+        val newBooks = libraryDetail.books.toMutableList()
+        newBooks.add(book.barcode)
+        libraryDetail.books = newBooks
 
-        // Saving book to db and updating library
+        // Saving book to db and calling check-in
         viewModelScope.launch {
             repository.addBook(book)
-            repository.updateLibrary(libraryDetail)
+            //repository.updateLibrary(libraryDetail)
+            repository.checkInBook(book, libraryDetail)
         }
     }
 
     //get books by Library
+    @OptIn(DelicateCoroutinesApi::class)
     suspend fun getBooksInLibrary(id: String):List<Book> {
         var books= emptyList<Book>()
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                books =repository.getBooksInLibraries(id)
+                books = repository.getAvailableBooksInLibraries(id)
                 onBooksChanged(books)
             } catch (t: Throwable) {
                 Log.d("ErrorLaunchDetail", t.toString())

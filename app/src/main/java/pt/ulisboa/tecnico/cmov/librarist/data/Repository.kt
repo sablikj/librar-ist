@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import javax.inject.Inject
 
@@ -26,12 +27,17 @@ class Repository @Inject constructor(
         }
     }
 
-    suspend fun updateLibrary(library: Library){
+    suspend fun checkInBook(book: Book, library: Library){
+        // First update library locally
         libraryDao.updateLibrary(library)
 
         // Try to update it on the server
         try {
-            libraryApi.updateLibrary(library.id, library)
+            val checkBook = CheckInBook(
+                barcode = book.barcode,
+                libraryId = library.id,
+                tableId = book.id)
+            libraryApi.checkIn(checkBook)
         } catch (e: Exception) {
             Log.e("Repository", "Error adding library to server", e)
         }
@@ -61,10 +67,10 @@ class Repository @Inject constructor(
         return localLibraries
     }
 
-    suspend fun getBooksInLibraries(id: String): List<Book> {
+    suspend fun getAvailableBooksInLibraries(id: String): List<Book> {
         // get books from api
         try {
-            val response = libraryApi.getBooksInLibrary(id)
+            val response = libraryApi.getAvailableBooksInLibrary(id)
             if (response.isSuccessful && response.body() != null) {
                 // If the API call is successful, update the local database and return the libraries
                 val books = response.body()?.data ?: emptyList()
@@ -131,7 +137,7 @@ class Repository @Inject constructor(
                 val response = libraryApi.getBook(barcode)
                 if(response.isSuccessful && response.body() != null){
                     // Book located on the server
-                    return response.body()!!
+                    return response.body()!!.data
                 } else {
                     // Book does not exist in local or server data
                     return null
@@ -149,7 +155,7 @@ class Repository @Inject constructor(
             val response = libraryApi.getBook(barcode)
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the book
-                bookDao.insert(response.body()!!)
+                bookDao.insert(response.body()!!.data)
                 response.body()!!
             } else {
                 Log.d("API", "Failed to fetch the data.")

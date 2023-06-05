@@ -3,16 +3,17 @@ package pt.ulisboa.tecnico.cmov.librarist.data.remote
 import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.BookListResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.BookResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.BooksInLibraryResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LibraryApi {
@@ -35,7 +36,7 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // Update library
-    @PATCH("libs/edit")
+    @PUT("libs/edit")
     suspend fun updateLibrary(
         @Query("id") id: String,
         @Body library: Library
@@ -47,7 +48,7 @@ interface LibraryApi {
     @GET("get_book_by_barcode")
     suspend fun getBook(
         @Query("barcode") id: String
-    ): Response<Book>
+    ): Response<BookResponse>
 
     // Add book
     @POST("books")
@@ -55,7 +56,29 @@ interface LibraryApi {
         @Body book: Book
     ): Response<ResponseBody>
 
-    // Book search
-    @GET("books_in_library/{id}")
-    suspend fun getBooksInLibrary(@Path("id") id: String): Response<BookListResponse>
+    // Check-in book
+    @POST("checkin")
+    suspend fun checkIn(
+        @Body book: CheckInBook
+    ): Response<ResponseBody>
+
+    // Check-out book
+    @PUT("checkout")
+    suspend fun checkOut(
+        @Query("barcode") barcode: String,
+        @Query("libraryId") libraryId: String,
+        @Body book: Book
+    ): Response<ResponseBody>
+
+    // For display in library detail
+    @GET("available_books_in_library")
+    suspend fun getAvailableBooksInLibrary(
+        @Query("library_id") id: String
+    ): Response<BookListResponse>
+
+    // Checking if exists
+    @GET("books_in_library")
+    suspend fun getBooksInLibrary(
+        @Query("library_id") id: String
+    ): Response<BooksInLibraryResponse>
 }
