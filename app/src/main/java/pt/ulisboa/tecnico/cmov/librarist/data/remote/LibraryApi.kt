@@ -14,6 +14,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LibraryApi {
@@ -71,9 +72,9 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // For display in library detail
-    @GET("available_books_in_library")
+    @GET("available_books_in_library/{id}")
     suspend fun getAvailableBooksInLibrary(
-        @Query("library_id") id: String
+        @Path("id") id: String
     ): Response<BookListResponse>
 
     // Checking if exists
