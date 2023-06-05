@@ -78,8 +78,8 @@ interface LibraryApi {
     ): Response<BookListResponse>
 
     // Checking if exists
-    @GET("books_in_library")
+    @GET("books_in_library/{id}")
     suspend fun getBooksInLibrary(
-        @Query("library_id") id: String
+        @Path("id") id: String
     ): Response<BooksInLibraryResponse>
 }
