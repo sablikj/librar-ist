@@ -3,6 +3,9 @@ package pt.ulisboa.tecnico.cmov.librarist.data.remote
 import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.BookListResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.BookResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.BooksInLibraryResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
@@ -35,7 +38,7 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // Update library
-    @PATCH("libs/edit")
+    @PUT("libs/edit")
     suspend fun updateLibrary(
         @Query("id") id: String,
         @Body library: Library
@@ -47,12 +50,7 @@ interface LibraryApi {
     @GET("get_book_by_barcode")
     suspend fun getBook(
         @Query("barcode") id: String
-    ): Response<Book>
-
-    @GET("/get_book_by_title?title=")
-    suspend fun getBookByTitle(
-        @Query("title") title: String
-    ): Response<Book>
+    ): Response<BookResponse>
 
     // Add book
     @POST("books")
@@ -60,7 +58,29 @@ interface LibraryApi {
         @Body book: Book
     ): Response<ResponseBody>
 
-    // Book search
+    // Check-in book
+    @POST("checkin")
+    suspend fun checkIn(
+        @Body book: CheckInBook
+    ): Response<ResponseBody>
+
+    // Check-out book
+    @PUT("checkout")
+    suspend fun checkOut(
+        @Query("barcode") barcode: String,
+        @Query("libraryId") libraryId: String,
+        @Body book: Book
+    ): Response<ResponseBody>
+
+    // For display in library detail
+    @GET("available_books_in_library/{id}")
+    suspend fun getAvailableBooksInLibrary(
+        @Path("id") id: String
+    ): Response<BookListResponse>
+
+    // Checking if exists
     @GET("books_in_library/{id}")
-    suspend fun getBooksInLibrary(@Path("id") id: String): Response<BookListResponse>
+    suspend fun getBooksInLibrary(
+        @Path("id") id: String
+    ): Response<BooksInLibraryResponse>
 }

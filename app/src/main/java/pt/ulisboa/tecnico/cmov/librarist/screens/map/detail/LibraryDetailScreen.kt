@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
@@ -73,7 +71,6 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.R
@@ -111,11 +108,10 @@ fun LibraryDetailScreen(
     // New book form
     val name = remember { mutableStateOf("") }
     val author = remember { mutableStateOf("") }
-    val available=remember { mutableStateOf(true) }
     val photoUri = remember { mutableStateOf("") }
 
-    LaunchedEffect(viewModel.libraryDetail.location) {
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(library.location, 18f)
+    LaunchedEffect(viewModel.libraryDetail.location){
+        cameraPositionState.position =  CameraPosition.fromLatLngZoom(library.location, 18f)
         cameraPositionState.centerOnLocation(scope, library.location)
     }
 
@@ -154,8 +150,7 @@ fun LibraryDetailScreen(
                         image = imageBytes,
                         author = author.value,
                         notifications = false,
-                        available = available.value,
-                        libraryId = library.id
+                        //libraryId = library.id
                     )
                 }
                 if (newBook != null) {
@@ -169,9 +164,10 @@ fun LibraryDetailScreen(
         }
     }
     // Updating library locally when it changes
+    /*
     LaunchedEffect(viewModel.libraryDetail.books.size) {
         viewModel.repository.updateLibrary(library)
-    }
+    }*/
 
     // Triggered after barcode is scanned
     if(viewModel.processBarCode.value){
@@ -180,26 +176,25 @@ fun LibraryDetailScreen(
                 val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(it)}}
                 Log.d("book", "detail book: $book")
 
-                if(book == null){
+                if (book == null || book.barcode == "") {
                     if(viewModel.checkIn.value){
                         // Check-in
                         viewModel.showBookDialog.value = true
-                    }
-                    else{
+                    } else{
                         // Check-out
                         Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     if(viewModel.checkIn.value){
                         // Check-in
-                        viewModel.libraryDetail.books.add(book)
+                        viewModel.libraryDetail.books.add(book.barcode)
                         Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
-                        if (viewModel.libraryDetail.books.any { it.barcode == book.barcode }) {
+                        if (viewModel.libraryDetail.books.any { it == book.barcode }) {
                             Log.d("books", viewModel.libraryDetail.books.size.toString())
-                            val index = viewModel.libraryDetail.books.indexOfFirst { it.barcode == book.barcode }
+                            val index = viewModel.libraryDetail.books.indexOfFirst { it == book.barcode }
                             if (index >= 0) {
                                 viewModel.libraryDetail.books.removeAt(index)
                             }
@@ -209,6 +204,7 @@ fun LibraryDetailScreen(
                         }
                     }
                 }
+
             }
             else{
                 Toast.makeText(context, "Book was not scanned successfully", Toast.LENGTH_SHORT).show()

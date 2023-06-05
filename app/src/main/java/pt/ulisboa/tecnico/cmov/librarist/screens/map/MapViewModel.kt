@@ -80,19 +80,17 @@ class MapViewModel @Inject constructor(application: Application,
     // Markers
     val location = mutableStateOf(LatLng(0.0, 0.0))
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
-
-    init {
-        updateLibraries()
-    }
-
     // Location
     @SuppressLint("StaticFieldLeak")
     private val context: Context = application.applicationContext
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
-
     var searchLocation = MutableLiveData<LatLng?>(null)
+
+    init {
+        updateLibraries()
+    }
 
 
     // Converting URI to byteArray
@@ -136,12 +134,6 @@ class MapViewModel @Inject constructor(application: Application,
                 val outputStream = ByteArrayOutputStream()
                 resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
 
-                // Calculate size in megabytes
-                val sizeInMb = outputStream.size() / 1024.0 / 1024.0
-
-                // Log the size of the resulting byte array
-                Log.d("ImageCompression", "Compressed image size: $sizeInMb MB")
-
                 return@withContext outputStream.toByteArray()
             } finally {
                 // Ensure the ParcelFileDescriptor is closed
@@ -184,6 +176,8 @@ class MapViewModel @Inject constructor(application: Application,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
     }
+    ////////////////////////////////
+    // Location functions
 
     fun getLastKnownLocation(context: Context) {
         if (ContextCompat.checkSelfPermission(
@@ -218,6 +212,8 @@ class MapViewModel @Inject constructor(application: Application,
         return addressText
     }
 
+    ////////////////////////////////
+    // Searchbar functions
     fun getAutocompletePredictions(
         query: String
     ): Task<FindAutocompletePredictionsResponse> {
