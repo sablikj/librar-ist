@@ -74,9 +74,10 @@ fun BookDetailScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary),
                 actions = {
                     IconButton(onClick = {
+                        viewModel.notifications.value = !viewModel.notifications.value
                         viewModel.notifications()
                     }) {
-                        if(book.notifications){
+                        if (viewModel.notifications.value) {
                             Icon(painter = painterResource( R.drawable.baseline_notifications_24),
                                 contentDescription = "Notifications",
                             )

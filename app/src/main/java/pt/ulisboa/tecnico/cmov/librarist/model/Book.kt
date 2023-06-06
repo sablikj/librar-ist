@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import pt.ulisboa.tecnico.cmov.librarist.utils.ByteArrayBase64Serializer
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.BOOK_TABLE
+import pt.ulisboa.tecnico.cmov.librarist.utils.IntToBooleanSerializer
 
 @Serializable
 @Entity(tableName = BOOK_TABLE)
@@ -41,4 +42,22 @@ data class CheckInBook(
     val libraryId: String = "",
     @SerialName("id")
     val tableId: String = ""
+)
+
+@Serializable
+data class BookLib(
+    @PrimaryKey(autoGenerate = false)
+    @SerialName("id")
+    val tableId: String = "",
+    @SerialName("bookCode")
+    val barcode: String = "",
+    val libraryId: String = "",
+    @Serializable(with = IntToBooleanSerializer::class)
+    val available: Boolean = true
+)
+
+@Serializable
+data class BookLibResponse(
+    @SerialName("data")
+    var data: List<BookLib>
 )

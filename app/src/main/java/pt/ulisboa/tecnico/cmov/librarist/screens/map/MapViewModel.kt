@@ -45,11 +45,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import java.io.ByteArrayOutputStream
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
 @Module
@@ -58,6 +60,12 @@ object AppModule {
     @Provides
     fun provideContentResolver(@ApplicationContext context: Context): ContentResolver {
         return context.contentResolver
+    }
+
+    @Singleton
+    @Provides
+    fun provideApplication(@ApplicationContext app: Context): MapApplication {
+        return app as MapApplication
     }
 }
 

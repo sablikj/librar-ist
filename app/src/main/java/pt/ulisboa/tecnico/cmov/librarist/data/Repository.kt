@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.BookLib
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import javax.inject.Inject
@@ -150,6 +151,22 @@ class Repository @Inject constructor(
         return localBook
     }
 
+    suspend fun getBookLib(barcode: String): List<BookLib>? {
+        try {
+            val response = libraryApi.getBookLib(barcode)
+            if (response.isSuccessful && response.body() != null) {
+                // Book located on the server
+                return response.body()!!.data
+            } else {
+                // Book does not exist in local or server data
+                return null
+            }
+        } catch (e: Exception) {
+            Log.d("ErrorLaunchDetail", e.toString())
+        }
+        return null
+    }
+
     suspend fun refreshBookDetail(barcode: String) {
         try {
             val response = libraryApi.getBook(barcode)
@@ -162,6 +179,39 @@ class Repository @Inject constructor(
             }
         }catch (e: Exception){
             Log.d("ErrorLaunchDetail", e.toString())
+        }
+    }
+
+    fun getFavouriteLibraryIds(): List<String> {
+        var result = mutableListOf<String>()
+        try {
+            val libs = libraryDao.getLibraries()
+            for (l in libs) {
+                if(l.favourite) {
+                    result.add(l.id)
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("Error in getting favourite libraries", e.toString())
+        }
+        return result
+    }
+
+    suspend fun saveBooksNotifications(barcode: String,notificationUpdate:Boolean) {
+        try {
+            var currentBook = getBook(barcode)?.let {
+                bookDao.updateBook(
+                    Book(
+                        barcode = it.id,
+                        name = it.name,
+                        image = it.image,
+                        author = it.author,
+                        notifications = notificationUpdate,
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Log.d("Error in saveBooksNotifications", e.toString())
         }
     }
 }
