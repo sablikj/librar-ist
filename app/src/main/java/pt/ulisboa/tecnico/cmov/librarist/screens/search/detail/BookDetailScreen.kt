@@ -75,7 +75,7 @@ fun BookDetailScreen(
                         viewModel.onNotificationsChanged(!notifications)
                         viewModel.notifications()
                     }) {
-                        if (viewModel.notifications.value) {
+                        if (notifications) {
                             Icon(painter = painterResource( R.drawable.baseline_notifications_24),
                                 contentDescription = "Notifications",
                             )
