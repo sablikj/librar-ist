@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationService
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationsController
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
@@ -47,6 +48,9 @@ class BookDetailViewModel @Inject constructor(
     init {
         barcode?.let {
             viewModelScope.launch(Dispatchers.IO) {
+                repository.getNotificationsForBook(barcode)?.let {
+                    onNotificationsChanged(it.notifications)
+                }
                 withContext(Dispatchers.Main) {
                     loading.value = true
                 }
@@ -55,7 +59,6 @@ class BookDetailViewModel @Inject constructor(
                 withContext(Dispatchers.Main) {
                     bookDetailResult?.let {
                         bookDetail = it
-                        onNotificationsChanged(it.notifications)
                     }
                     loading.value = false
                 }
@@ -68,8 +71,13 @@ class BookDetailViewModel @Inject constructor(
         if (barcode != null) {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    repository.saveBooksNotifications(barcode, notifications.value)
-                    notificationService.startApiPolling(notifications.value, barcode)
+                    repository.addNotifications(
+                        Notifications(
+                            barcode = barcode,
+                            notifications = notifications.value
+                        )
+                    )
+                    notificationService.startApiPolling()
                 } catch (t: Throwable) {
                     Log.d("ErrorLaunchDetail", t.toString())
                 }

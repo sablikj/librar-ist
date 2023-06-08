@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.BookLib
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -16,6 +17,7 @@ class Repository @Inject constructor(
 ) {
     private val libraryDao = libraryDatabase.libraryDao()
     private val bookDao = libraryDatabase.bookDao()
+    private val notificationsDao = libraryDatabase.notificationsDao()
 
     suspend fun addLibrary(library: Library) {
         libraryDao.insert(library)
@@ -66,6 +68,35 @@ class Repository @Inject constructor(
             return localLibraries
         }
         return localLibraries
+    }
+
+    suspend fun getNotificationsForBook(barcode: String): Notifications? {
+        try {
+            val response = notificationsDao.getNotificationsForBook(barcode)
+            return response
+        } catch (e: Exception) {
+            Log.d("getNotifications", "Error during GET: $e")
+        }
+        return null
+    }
+
+    suspend fun getNotifications(): List<Notifications> {
+        try {
+            val response = notificationsDao.getNotifications()
+            return response
+        } catch (e: Exception) {
+            Log.d("getNotifications", "Error during GET: $e")
+        }
+        return emptyList()
+    }
+
+    suspend fun addNotifications(notifications: Notifications) {
+        try {
+            notificationsDao.addNotification(notifications)
+
+        } catch (e: Exception) {
+            Log.d("addNotifications", "Error during GET: $e")
+        }
     }
 
     suspend fun getAvailableBooksInLibraries(id: String): List<Book> {
@@ -151,9 +182,9 @@ class Repository @Inject constructor(
         return localBook
     }
 
-    suspend fun getBookLib(barcode: String): List<BookLib>? {
+    suspend fun getBookLib(): List<BookLib>? {
         try {
-            val response = libraryApi.getBookLib(barcode)
+            val response = libraryApi.getBookLib()
             if (response.isSuccessful && response.body() != null) {
                 // Book located on the server
                 return response.body()!!.data
@@ -195,24 +226,5 @@ class Repository @Inject constructor(
             Log.d("Error in getting favourite libraries", e.toString())
         }
         return result
-    }
-
-    suspend fun saveBooksNotifications(barcode: String, notificationUpdate: Boolean) {
-        try {
-            var currentBook = getBook(barcode)?.let {
-                bookDao.updateBook(
-                    Book(
-                        barcode = it.barcode,
-                        id = it.id,
-                        name = it.name,
-                        image = it.image,
-                        author = it.author,
-                        notifications = notificationUpdate,
-                    )
-                )
-            }
-        } catch (e: Exception) {
-            Log.d("Error in saveBooksNotifications", e.toString())
-        }
     }
 }

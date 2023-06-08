@@ -7,6 +7,7 @@ object Constants {
     // Object tables
     const val LIBRARY_TABLE = "library_table"
     const val BOOK_TABLE = "book_table"
+    const val NOTIFICATIONS_TABLE = "notifications_table"
 
     // Key tables
     const val LIBRARY_REMOTE_KEYS_TABLE = "library_remote_keys"

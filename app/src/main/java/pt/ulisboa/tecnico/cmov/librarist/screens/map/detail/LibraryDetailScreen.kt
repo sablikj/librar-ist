@@ -150,7 +150,6 @@ fun LibraryDetailScreen(
                         name = name.value,
                         image = imageBytes,
                         author = author.value,
-                        notifications = false,
                         //libraryId = library.id
                     )
                 }

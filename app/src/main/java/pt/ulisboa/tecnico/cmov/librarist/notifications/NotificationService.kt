@@ -14,26 +14,30 @@ class NotificationService(
 ) {
     private val pollingIntervalMillis = 5000L // 5 seconds
 
-    fun startApiPolling(notification: Boolean, barcode: String): Boolean {
+    fun startApiPolling(): Boolean {
         var result = false;
         var favs = repository.getFavouriteLibraryIds()
         try {
             CoroutineScope(Dispatchers.IO).launch {
-                while (notification) {
-                    val response = repository.getBookLib(barcode)?.let { bookLibs ->
-                        for (book in bookLibs) {
-                            if (book.available && favs.contains(book.libraryId)) {
-                                val bookname = repository.getBook(barcode)?.name
-                                showNotification(
-                                    "Book available",
-                                    bookname + "is available now",
-                                )
-                                result = true
-                                return@launch
+                repository.getNotifications().let {
+                    for (n in it) {
+                        while (n.notifications) {
+                            repository.getBookLib()?.let { bookLibs ->
+                                for (book in bookLibs) {
+                                    if (book.available && favs.contains(book.libraryId)) {
+                                        val bookname = repository.getBook(book.barcode)?.name
+                                        showNotification(
+                                            "Book available",
+                                            bookname + " is available now",
+                                        )
+                                        result = true
+                                        return@launch
+                                    }
+                                }
                             }
+                            delay(pollingIntervalMillis)
                         }
                     }
-                    delay(pollingIntervalMillis)
                 }
             }
 

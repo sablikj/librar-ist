@@ -17,7 +17,6 @@ data class Book(
     @SerialName("title")
     val name: String = "",
     val author: String = "",
-    val notifications: Boolean = false,
     //@SerialName("libraryId")
     //var libraryId: String="",
     @SerialName("photo") @Serializable(with = ByteArrayBase64Serializer::class)
