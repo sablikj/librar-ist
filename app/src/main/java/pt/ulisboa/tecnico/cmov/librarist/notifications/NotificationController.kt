@@ -29,7 +29,7 @@ class NotificationsController(private val context: Context) {
 
         // Build the notification
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.notification)
+            .setSmallIcon(R.drawable.baseline_notifications_24)
             .setContentTitle(title)
             .setContentText(message)
             .setAutoCancel(true)
