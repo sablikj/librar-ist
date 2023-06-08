@@ -51,13 +51,10 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
         contentScale = ContentScale.Fit
     )
 
-    fun onNotificationClicked(): Unit {
-
-    }
     ElevatedCard(
         onClick = { onDetailClicked(book.barcode) },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
+            containerColor =  MaterialTheme.colorScheme.primary,
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -75,14 +72,6 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
                     contentScale = ContentScale.Crop,
 
                     )
-                // Notification icon
-                ClickableImageView(
-                    imageResId = R.drawable.notification,
-                    imageSize = 50.dp,
-                    onClick = {
-                        onNotificationClicked()
-                    }
-                )
                 // Name
                 Row(
                     modifier = Modifier
@@ -123,28 +112,5 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
                 )
             }
         }
-    }
-}
-
-@Composable
-fun ClickableImageView(
-    imageResId: Int,
-    imageSize: Dp,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .size(imageSize)
-            .clickable { onClick.invoke() },
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Image(
-            painter = painterResource(imageResId),
-            contentDescription = null,
-            modifier = Modifier
-                .aspectRatio(1f)
-                .padding(4.dp),
-            contentScale = ContentScale.Crop
-        )
     }
 }
