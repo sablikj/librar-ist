@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
@@ -32,10 +34,15 @@ class BookDetailViewModel @Inject constructor(
     private val barcode: String? = savedStateHandle[Constants.Routes.BOOK_DETAIL_ID]
     private val notificationController = NotificationsController(application.applicationContext)
     private val notificationService = NotificationService(repository, notificationController)
-    var notifications = mutableStateOf(false)
+    private val _notifications = MutableStateFlow<Boolean>(false)
+    val notifications: StateFlow<Boolean> = _notifications
 
 
     var bookDetail by mutableStateOf(Book())
+
+    fun onNotificationsChanged(notifications: Boolean) {
+        _notifications.value = notifications
+    }
 
     init {
         barcode?.let {
@@ -48,6 +55,7 @@ class BookDetailViewModel @Inject constructor(
                 withContext(Dispatchers.Main) {
                     bookDetailResult?.let {
                         bookDetail = it
+                        onNotificationsChanged(it.notifications)
                     }
                     loading.value = false
                 }
@@ -57,26 +65,11 @@ class BookDetailViewModel @Inject constructor(
 
     //TODO: converter creation for getBook() fails for some reason sometimes
     fun notifications() {
-
-        if (barcode != null && notifications.value == true) {
+        if (barcode != null) {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    if (barcode != null)
-                        repository.saveBooksNotifications(barcode, notifications.value)
-                    var result = notificationService.startApiPolling(notifications.value, barcode)
-                    if (result) {
-                        // notifications.value=false
-                    }
-                } catch (t: Throwable) {
-                    Log.d("ErrorLaunchDetail", t.toString())
-                }
-            }
-        }
-        if (barcode != null && notifications.value == false) {
-            GlobalScope.launch(Dispatchers.IO) {
-                try {
-                    if (barcode != null)
-                        repository.saveBooksNotifications(barcode, notifications.value)
+                    repository.saveBooksNotifications(barcode, notifications.value)
+                    notificationService.startApiPolling(notifications.value, barcode)
                 } catch (t: Throwable) {
                     Log.d("ErrorLaunchDetail", t.toString())
                 }

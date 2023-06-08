@@ -197,12 +197,13 @@ class Repository @Inject constructor(
         return result
     }
 
-    suspend fun saveBooksNotifications(barcode: String,notificationUpdate:Boolean) {
+    suspend fun saveBooksNotifications(barcode: String, notificationUpdate: Boolean) {
         try {
             var currentBook = getBook(barcode)?.let {
                 bookDao.updateBook(
                     Book(
-                        barcode = it.id,
+                        barcode = it.barcode,
+                        id = it.id,
                         name = it.name,
                         image = it.image,
                         author = it.author,
