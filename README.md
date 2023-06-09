@@ -5,7 +5,6 @@
 
 ## Mandatory features
 ### TODO
-* **(Book detail)** A button to enable/ disable notifications of when the book becomes available in one of the user’s favorite libraries
 * **(Book detail)**	A list of libraries where the book is available indicating how far away they are and sorted by this distance
 * **(Book detail)**	Tapping a library brings up its information panel 
 * **(Search tab)** The book search screen allows users to see the full list of books ever donated to any library managed from within the App and to filter it down with a text search
@@ -22,6 +21,7 @@
   * a book search screen.
 * The map can be dragged around to show more libraries.
 * The user should be able to center the map on their current location at the press of a button. 
+* A button to enable/ disable notifications of when the book becomes available in one of the user’s favorite libraries
 * Map has search bar to lookup and center the map on a given address
 *	Free libraries should show up on the map with markers. 
 *	The user’s favorite libraries should be highlighted with a different marker. 
