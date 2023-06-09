@@ -6,6 +6,6 @@ import com.google.android.gms.maps.model.LatLng
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 
 data class MapState(
-    val lastKnownLocation: LatLng,
+    var lastKnownLocation: MutableState<LatLng>,
     var libraries: MutableState<List<Library>> = mutableStateOf(listOf())
 )

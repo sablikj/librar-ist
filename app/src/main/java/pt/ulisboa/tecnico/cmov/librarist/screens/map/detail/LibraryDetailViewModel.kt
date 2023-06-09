@@ -2,12 +2,7 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
 import android.content.ContentResolver
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +26,13 @@ import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
-import java.io.ByteArrayOutputStream
+import pt.ulisboa.tecnico.cmov.librarist.utils.ImageUtils
 import javax.inject.Inject
 
 @HiltViewModel
 class LibraryDetailViewModel @Inject constructor(
     val repository: Repository,
+    val imageUtils: ImageUtils,
     savedStateHandle: SavedStateHandle,
     private val contentResolver: ContentResolver
 ): ViewModel() {
@@ -64,23 +60,6 @@ class LibraryDetailViewModel @Inject constructor(
         .build()
 
     init {
-        /*
-        libraryId.let {
-            loading.value = true
-            viewModelScope.launch(Dispatchers.IO) {
-                repository.refreshLibraryDetail(libraryId)
-                //get books for library
-                val currentBooks = getBooksInLibrary(libraryId)
-                onBooksChanged(currentBooks)
-                // TODO: call getLibrary instead
-                repository.getLibraryDetail(it).collect { detail ->
-                    withContext(Dispatchers.Main) {
-                        libraryDetail = detail
-                        loading.value = false
-                    }
-                }
-            }
-        }*/
         initLibrary()
     }
 
@@ -131,53 +110,9 @@ class LibraryDetailViewModel @Inject constructor(
     }
 
     // Converting URI to byteArray
-    // TODO: add to separate file to avoid code duplicity
     fun uriToImage(uri: Uri) = viewModelScope.launch {
-        val byteArray = uriToByteArray(uri)
+        val byteArray = imageUtils.uriToByteArray(contentResolver, uri)
         currentImageBytes.postValue(byteArray)
-    }
-
-    private suspend fun uriToByteArray(uri: Uri): ByteArray {
-        return withContext(Dispatchers.IO) {
-            var parcelFileDescriptor: ParcelFileDescriptor? = null
-            try {
-                parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-                val fileDescriptor = parcelFileDescriptor?.fileDescriptor
-                val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-
-                // Read the orientation from the Exif data
-                val exif = fileDescriptor?.let { ExifInterface(it) }
-                val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-
-                // Create a matrix to perform transformations on the bitmap
-                val matrix = Matrix()
-
-                // Rotate the bitmap according to the orientation
-                when (orientation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-                }
-
-                // Create a new bitmap that has been rotated correctly
-                val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-
-                // Resizing the image
-                val targetWidth = 800  // specify desired width
-                val scaleFactor = targetWidth.toDouble() / rotatedBitmap.width.toDouble()
-                val targetHeight = (rotatedBitmap.height * scaleFactor).toInt()
-                val resizedBitmap = Bitmap.createScaledBitmap(rotatedBitmap, targetWidth, targetHeight, true)
-
-                // Compressing the image and converting to ByteArray
-                val outputStream = ByteArrayOutputStream()
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-
-                return@withContext outputStream.toByteArray()
-            } finally {
-                // Ensure the ParcelFileDescriptor is closed
-                parcelFileDescriptor?.close()
-            }
-        }
     }
 
     fun addNewBook(book: Book){
@@ -189,7 +124,6 @@ class LibraryDetailViewModel @Inject constructor(
         // Saving book to db and calling check-in
         viewModelScope.launch {
             repository.addBook(book)
-            //repository.updateLibrary(libraryDetail)
             repository.checkInBook(book, libraryDetail)
         }
     }

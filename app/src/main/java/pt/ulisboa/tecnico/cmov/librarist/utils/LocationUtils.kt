@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
-import java.lang.Math.round
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.resume

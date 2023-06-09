@@ -3,6 +3,8 @@ package pt.ulisboa.tecnico.cmov.librarist.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -27,7 +29,7 @@ fun BottomNavGraph(navController: NavHostController) {
     val lastKnownLocation: LatLng = LatLng( 38.736946,  -9.142685)
 
     // Construct your MapState
-    val mapState = MapState(lastKnownLocation)
+    val mapState = remember { mutableStateOf(MapState(mutableStateOf(lastKnownLocation))) }
 
     NavHost(
         navController = navController,

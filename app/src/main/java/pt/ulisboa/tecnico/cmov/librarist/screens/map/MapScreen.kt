@@ -38,7 +38,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -65,7 +64,7 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
-    state: MapState,
+    state: MutableState<MapState>,
     onMarkerClicked: (String) -> Unit,
     viewModel: MapViewModel = hiltViewModel()
 ) {
@@ -195,8 +194,11 @@ fun MapScreen(
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
         // Center map on current location
-        viewModel.getLastKnownLocation(context)
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(state.lastKnownLocation, 18f)
+        val loc =  viewModel.locationUtils.getLastKnownLocation(context)
+        if (loc != null) {
+            state.value.lastKnownLocation.value = LatLng(loc.latitude, loc.longitude)
+        }
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(state.value.lastKnownLocation.value, 18f)
     }
 
     // Triggered when lastKnownLocation is updated
@@ -355,12 +357,12 @@ fun MapScreen(
             // Open only if Camera and storage permissions are granted
             if(camStorGranted){
                 ComposeMapCenterPointMapMarker(scope, showLibraryDialog,
-                    lastKnownLocation!!, viewModel.location, showPin)
+                    state.value.lastKnownLocation.value, viewModel.location, showPin)
             }
         }
 
         if (showLibraryDialog.value) {
-            address.value = viewModel.getReadableLocation(viewModel.location.value, context)
+            address.value = viewModel.locationUtils.getReadableLocation(viewModel.location.value, context)
             NewLibraryDialog(name, address, viewModel.location, showCamera, showLibraryDialog, photoUri, addNewLibrary)
         }
 
@@ -368,7 +370,6 @@ fun MapScreen(
             CameraView(onImageCaptured = { uri, _ ->
                 photoUri.value = uri.toString()
                 stopCamera.value = true
-                //TODO: after saving marker, set URI to "" so it does not appear when adding another library
             }, onError = { _ ->
                 scope.launch {
                     snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
@@ -392,16 +393,16 @@ fun MapScreen(
 fun ComposeMapCenterPointMapMarker(
     scope:CoroutineScope,
     showForm: MutableState<Boolean>,
-    currentLocation: Location,
+    currentLocation: LatLng,
     location: MutableState<LatLng>,
     showPin: MutableState<Boolean>
 ){
     val shouldDismiss = remember { mutableStateOf(false) }
-    val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
+    //val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(loc, 18f)
-        centerOnLocation(scope, loc)
+        position = CameraPosition.fromLatLngZoom(currentLocation, 18f)
+        centerOnLocation(scope, currentLocation)
     }
 
     // Returning values

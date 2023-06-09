@@ -48,6 +48,8 @@ import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
+import pt.ulisboa.tecnico.cmov.librarist.utils.ImageUtils
+import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
 import java.io.ByteArrayOutputStream
 import java.util.Locale
 import javax.inject.Inject
@@ -71,13 +73,15 @@ object AppModule {
 
 @HiltViewModel
 class MapViewModel @Inject constructor(application: Application,
+                                       val locationUtils: LocationUtils,
+                                       val imageUtils: ImageUtils,
                                        val repository: Repository,
                                        private val contentResolver: ContentResolver
 ): ViewModel()
 {
     val state: MutableState<MapState> = mutableStateOf(
         MapState(
-            lastKnownLocation = LatLng(1.35, 103.87),
+            lastKnownLocation = mutableStateOf(LatLng(1.35, 103.87)),
             libraries = mutableStateOf(listOf())
         )
     )
@@ -91,7 +95,6 @@ class MapViewModel @Inject constructor(application: Application,
     // Location
     @SuppressLint("StaticFieldLeak")
     private val context: Context = application.applicationContext
-    private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
     var searchLocation = MutableLiveData<LatLng?>(null)
@@ -100,54 +103,10 @@ class MapViewModel @Inject constructor(application: Application,
         updateLibraries()
     }
 
-
     // Converting URI to byteArray
-    // TODO: add to separate file to avoid code duplicity
     fun uriToImage(uri: Uri) = viewModelScope.launch {
-        val byteArray = uriToByteArray(uri)
+        val byteArray = imageUtils.uriToByteArray(contentResolver, uri)
         currentImageBytes.postValue(byteArray)
-    }
-    private suspend fun uriToByteArray(uri: Uri): ByteArray {
-        return withContext(Dispatchers.IO) {
-            var parcelFileDescriptor: ParcelFileDescriptor? = null
-            try {
-                parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-                val fileDescriptor = parcelFileDescriptor?.fileDescriptor
-                val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-
-                // Read the orientation from the Exif data
-                val exif = fileDescriptor?.let { ExifInterface(it) }
-                val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-
-                // Create a matrix to perform transformations on the bitmap
-                val matrix = Matrix()
-
-                // Rotate the bitmap according to the orientation
-                when (orientation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-                }
-
-                // Create a new bitmap that has been rotated correctly
-                val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-
-                // Resizing the image
-                val targetWidth = 800  // specify desired width
-                val scaleFactor = targetWidth.toDouble() / rotatedBitmap.width.toDouble()
-                val targetHeight = (rotatedBitmap.height * scaleFactor).toInt()
-                val resizedBitmap = Bitmap.createScaledBitmap(rotatedBitmap, targetWidth, targetHeight, true)
-
-                // Compressing the image and converting to ByteArray
-                val outputStream = ByteArrayOutputStream()
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-
-                return@withContext outputStream.toByteArray()
-            } finally {
-                // Ensure the ParcelFileDescriptor is closed
-                parcelFileDescriptor?.close()
-            }
-        }
     }
 
     fun addLibrary(library: Library) {
@@ -182,41 +141,6 @@ class MapViewModel @Inject constructor(application: Application,
             context,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
-    }
-    ////////////////////////////////
-    // Location functions
-
-    fun getLastKnownLocation(context: Context) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location : Location? ->
-                    lastKnownLocation.value = location
-                }
-                .addOnFailureListener { e ->
-                    Log.d("Error", e.toString())
-                }
-        }
-    }
-
-    fun getReadableLocation(location: LatLng, context: Context): String {
-        var addressText = ""
-        val geocoder = Geocoder(context, Locale.getDefault())
-
-        try {
-            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-
-            if (addresses?.isNotEmpty() == true) {
-                val address = addresses[0]
-                addressText = "${address.getAddressLine(0)}, ${address.locality}"
-            }
-        } catch (e: Exception) {
-            Log.d("geolocation", e.message.toString())
-        }
-        return addressText
     }
 
     ////////////////////////////////

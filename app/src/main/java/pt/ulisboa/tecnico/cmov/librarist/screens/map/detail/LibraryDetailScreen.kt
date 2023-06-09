@@ -470,7 +470,6 @@ fun LibraryDetailScreen(
                 CameraView(onImageCaptured = { uri, _ ->
                     photoUri.value = uri.toString()
                     stopCamera.value = true
-                    //TODO: after saving marker, set URI to "" so it does not appear when adding another library
                 }, onError = { _ ->
                     scope.launch {
                         snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
