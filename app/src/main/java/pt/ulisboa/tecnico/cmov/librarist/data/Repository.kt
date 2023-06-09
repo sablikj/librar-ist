@@ -1,14 +1,19 @@
 package pt.ulisboa.tecnico.cmov.librarist.data
 
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
+import pt.ulisboa.tecnico.cmov.librarist.data.paging.BookPagingSource
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.BookLib
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
+import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.ITEMS_PER_PAGE
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -38,11 +43,10 @@ class Repository @Inject constructor(
         try {
             val checkBook = CheckInBook(
                 barcode = book.barcode,
-                libraryId = library.id,
-                tableId = book.id)
+                libraryId = library.id)
             libraryApi.checkIn(checkBook)
         } catch (e: Exception) {
-            Log.e("Repository", "Error adding library to server", e)
+            Log.e("Repository", "Error adding book to the server", e)
         }
     }
 
@@ -149,7 +153,7 @@ class Repository @Inject constructor(
         libraryDao.updateLibrary(library)
 
         // Try to update it on the server
-        try {
+        try { //TODO: fix
             //libraryApi.updateLibrary(library.id, library)
         } catch (e: Exception) {
             Log.e("Repository", "Error adding library to server", e)
@@ -190,6 +194,16 @@ class Repository @Inject constructor(
         }
         // Return book from local storage
         return localBook
+    }
+
+    // Search books
+    fun searchBooks(query: String): Flow<PagingData<Book>> {
+        return Pager(
+            config = PagingConfig(pageSize = ITEMS_PER_PAGE),
+            pagingSourceFactory = {
+                BookPagingSource(libraryApi = libraryApi, query = query)
+            }
+        ).flow
     }
 
     suspend fun getBookLib(): List<BookLib>? {

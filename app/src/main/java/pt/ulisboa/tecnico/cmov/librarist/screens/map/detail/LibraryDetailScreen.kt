@@ -149,15 +149,13 @@ fun LibraryDetailScreen(
                         barcode = it,
                         name = name.value,
                         image = imageBytes,
-                        author = author.value,
-                        //libraryId = library.id
+                        author = author.value
                     )
                 }
                 if (newBook != null) {
                     viewModel.addNewBook(newBook)
                     Toast.makeText(context, "New book added!", Toast.LENGTH_SHORT).show()
                 }
-
                 // Reset the trigger after the library has been added
                 addNewBook.value = false
             }
@@ -165,7 +163,8 @@ fun LibraryDetailScreen(
     }
     // Updating library locally when it changes
     LaunchedEffect(viewModel.libraryDetail.books.size) {
-        viewModel.repository.updateLibrary(library)
+        //viewModel.repository.updateLibrary(library)
+        viewModel.initLibrary()
     }
 
     // Triggered after barcode is scanned
@@ -173,7 +172,6 @@ fun LibraryDetailScreen(
         LaunchedEffect(viewModel.scanResult.value) {
             if(viewModel.scanResult.value != ""){
                 val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(it)}}
-                Log.d("book", "detail book: $book")
 
                 if (book == null || book.barcode == "") {
                     if(viewModel.checkIn.value){
@@ -181,25 +179,24 @@ fun LibraryDetailScreen(
                         viewModel.showBookDialog.value = true
                     } else{
                         // Check-out
+                        Log.d("bookTest", "dorime")
                         Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     if(viewModel.checkIn.value){
                         // Check-in
-                        //viewModel.libraryDetail.books.add(book.barcode)
                         viewModel.repository.checkInBook(book, viewModel.libraryDetail)
                         Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
                         if (viewModel.libraryDetail.books.any { it == book.barcode }) {
-                            Log.d("books", viewModel.libraryDetail.books.size.toString())
                             val index = viewModel.libraryDetail.books.indexOfFirst { it == book.barcode }
                             if (index >= 0) {
                                 viewModel.libraryDetail.books.removeAt(index)
                             }
-                            Log.d("books", viewModel.libraryDetail.books.size.toString())
                         }else{
+                            Log.d("bookTest", "dorime2")
                             Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                         }
                     }

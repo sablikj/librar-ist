@@ -64,6 +64,27 @@ class LibraryDetailViewModel @Inject constructor(
         .build()
 
     init {
+        /*
+        libraryId.let {
+            loading.value = true
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.refreshLibraryDetail(libraryId)
+                //get books for library
+                val currentBooks = getBooksInLibrary(libraryId)
+                onBooksChanged(currentBooks)
+                // TODO: call getLibrary instead
+                repository.getLibraryDetail(it).collect { detail ->
+                    withContext(Dispatchers.Main) {
+                        libraryDetail = detail
+                        loading.value = false
+                    }
+                }
+            }
+        }*/
+        initLibrary()
+    }
+
+    fun initLibrary(){
         libraryId.let {
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
@@ -104,7 +125,7 @@ class LibraryDetailViewModel @Inject constructor(
 
         // Updating library locally
         viewModelScope.launch {
-            // TODO: use checkin api call
+            // TODO: fix to local only
             repository.addLibrary(libraryDetail)
         }
     }

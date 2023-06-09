@@ -62,6 +62,14 @@ interface LibraryApi {
         @Body book: Book
     ): Response<ResponseBody>
 
+    // search Book
+    //TODO: add endpoint
+    @GET("")
+    suspend fun searchBooks(
+        @Query("search") query: String,
+        @Query("limit") limit: Int
+    ): BookListResponse
+
     // Check-in book
     @POST("checkin")
     suspend fun checkIn(
