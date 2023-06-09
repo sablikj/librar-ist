@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "78c0442ce93014fd2898abee173e558e",
+    "identityHash": "f682624ffbd0e97c4ce84a7decdcd35a",
     "entities": [
       {
         "tableName": "book_table",
@@ -50,7 +50,7 @@
       },
       {
         "tableName": "library_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `image` BLOB NOT NULL, `location` TEXT NOT NULL, `books` TEXT NOT NULL, `favourite` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `image` BLOB NOT NULL, `location` TEXT NOT NULL, `books` TEXT NOT NULL, `favourite` INTEGER NOT NULL, `distance` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -85,6 +85,12 @@
           {
             "fieldPath": "favourite",
             "columnName": "favourite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distance",
+            "columnName": "distance",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -128,7 +134,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '78c0442ce93014fd2898abee173e558e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f682624ffbd0e97c4ce84a7decdcd35a')"
     ]
   }
 }

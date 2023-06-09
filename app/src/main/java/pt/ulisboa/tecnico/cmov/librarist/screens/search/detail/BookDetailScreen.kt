@@ -9,7 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
@@ -126,8 +131,57 @@ fun BookDetailScreen(
                         }
                     }
                     // Other libraries card
+                    //Available books
+                    if (viewModel.libraries.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(viewModel.libraries) { lib ->
+                                Card(modifier = Modifier
+                                    .fillMaxWidth(),
+                                    onClick = { onLibraryClicked(lib.id) }
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(6.dp)
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = lib.name,
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+                                        }
+                                        Text(
+                                            text = "${lib.distance} m",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        Text(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 6.dp),
+                            text = "Not available",
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                     // TODO: fix
-                    if (false/*book.libraryId.isNotEmpty()*/) {
+                    /*
+                    if (viewModel.libraries.isNotEmpty()) {
                         ElevatedCard(
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -195,7 +249,7 @@ fun BookDetailScreen(
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }

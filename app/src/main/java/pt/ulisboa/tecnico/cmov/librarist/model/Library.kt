@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.librarist.model
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.android.gms.maps.model.LatLng
@@ -25,7 +26,9 @@ data class Library(
 
     @TypeConverters(StringListConverter::class)
     var books: MutableList<String> = mutableListOf(), // All books IDs in the library (available or not)
-    var favourite: Boolean = false // Local storage only
+    var favourite: Boolean = false, // Local storage only
+    //@Ignore
+    var distance: Int = 0
 )
 @Serializable
 data class LibraryListResponse(var data: List<Library>)

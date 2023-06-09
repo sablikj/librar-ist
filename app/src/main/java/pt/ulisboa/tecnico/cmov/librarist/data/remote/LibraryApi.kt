@@ -52,6 +52,12 @@ interface LibraryApi {
         @Query("barcode") id: String
     ): Response<BookLibResponse>
 
+    // Get libraries where book is available
+    @GET("get_libraries_by_book_title")
+    suspend fun getBookLibraries(
+        @Query("title") title: String
+    ): Response<BookLibResponse>
+
     @GET("get_book_lib")
     suspend fun getBookLib(
     ): Response<BookLibResponse>

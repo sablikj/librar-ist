@@ -251,4 +251,33 @@ class Repository @Inject constructor(
         }
         return result
     }
+
+    suspend fun getBookLibraries(title: String): List<Library>?{
+        try {
+            val response = libraryApi.getBookLibraries(title)
+
+            if(response.isSuccessful && response.body() != null){
+                val libraryIds = response.body()!!.data
+
+                // Getting libraries
+                var libraries = mutableListOf<Library>()
+                for (lib in libraryIds){
+                    try {
+                        val libResponse = libraryApi.getLibraryDetail(lib.libraryId)
+                        if(libResponse.isSuccessful && libResponse.body() !== null){
+                            libraries.add(libResponse.body()!!.data)
+                        }
+                    }catch (e: Exception){
+                        Log.d("Error while getting libraries for book", e.toString())
+                    }
+                }
+                return libraries
+            }
+            return emptyList()
+
+        }catch (e: Exception){
+            Log.d("Error while getting libraries for book", e.toString())
+        }
+        return emptyList()
+    }
 }
