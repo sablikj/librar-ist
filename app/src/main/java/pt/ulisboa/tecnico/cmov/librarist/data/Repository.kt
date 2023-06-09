@@ -5,8 +5,10 @@ import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.BookLib
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
+import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -15,6 +17,7 @@ class Repository @Inject constructor(
 ) {
     private val libraryDao = libraryDatabase.libraryDao()
     private val bookDao = libraryDatabase.bookDao()
+    private val notificationsDao = libraryDatabase.notificationsDao()
 
     suspend fun addLibrary(library: Library) {
         libraryDao.insert(library)
@@ -65,6 +68,35 @@ class Repository @Inject constructor(
             return localLibraries
         }
         return localLibraries
+    }
+
+    suspend fun getNotificationsForBook(barcode: String): Notifications? {
+        try {
+            val response = notificationsDao.getNotificationsForBook(barcode)
+            return response
+        } catch (e: Exception) {
+            Log.d("getNotifications", "Error during GET: $e")
+        }
+        return null
+    }
+
+    suspend fun getNotifications(): List<Notifications> {
+        try {
+            val response = notificationsDao.getNotifications()
+            return response
+        } catch (e: Exception) {
+            Log.d("getNotifications", "Error during GET: $e")
+        }
+        return emptyList()
+    }
+
+    suspend fun addNotifications(notifications: Notifications) {
+        try {
+            notificationsDao.addNotification(notifications)
+
+        } catch (e: Exception) {
+            Log.d("addNotifications", "Error during GET: $e")
+        }
     }
 
     suspend fun getAvailableBooksInLibraries(id: String): List<Book> {
@@ -150,6 +182,22 @@ class Repository @Inject constructor(
         return localBook
     }
 
+    suspend fun getBookLib(): List<BookLib>? {
+        try {
+            val response = libraryApi.getBookLib()
+            if (response.isSuccessful && response.body() != null) {
+                // Book located on the server
+                return response.body()!!.data
+            } else {
+                // Book does not exist in local or server data
+                return null
+            }
+        } catch (e: Exception) {
+            Log.d("ErrorLaunchDetail", e.toString())
+        }
+        return null
+    }
+
     suspend fun refreshBookDetail(barcode: String) {
         try {
             val response = libraryApi.getBook(barcode)
@@ -163,5 +211,20 @@ class Repository @Inject constructor(
         }catch (e: Exception){
             Log.d("ErrorLaunchDetail", e.toString())
         }
+    }
+
+    fun getFavouriteLibraryIds(): List<String> {
+        var result = mutableListOf<String>()
+        try {
+            val libs = libraryDao.getLibraries()
+            for (l in libs) {
+                if(l.favourite) {
+                    result.add(l.id)
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("Error in getting favourite libraries", e.toString())
+        }
+        return result
     }
 }

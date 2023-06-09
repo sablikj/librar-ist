@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cmov.librarist.data.remote
 
 import okhttp3.ResponseBody
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
+import pt.ulisboa.tecnico.cmov.librarist.model.BookLibResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.BookListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.BookResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.BooksInLibraryResponse
@@ -12,6 +13,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -50,6 +52,16 @@ interface LibraryApi {
     suspend fun getBook(
         @Query("barcode") id: String
     ): Response<BookResponse>
+
+    // Get books from BookLib
+    @GET("get_booklib_by_barcode")
+    suspend fun getBookLibByBarcode(
+        @Query("barcode") id: String
+    ): Response<BookLibResponse>
+
+    @GET("get_book_lib")
+    suspend fun getBookLib(
+    ): Response<BookLibResponse>
 
     // Add book
     @POST("books")
