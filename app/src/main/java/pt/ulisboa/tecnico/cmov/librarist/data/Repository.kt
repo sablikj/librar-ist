@@ -145,6 +145,16 @@ class Repository @Inject constructor(
     fun getLibraryDetail(id: String): Flow<Library> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
+    suspend fun updateLibrary(library: Library){
+        libraryDao.updateLibrary(library)
+
+        // Try to update it on the server
+        try {
+            //libraryApi.updateLibrary(library.id, library)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error adding library to server", e)
+        }
+    }
 
     suspend fun addBook(book: Book) {
         bookDao.insert(book)
@@ -169,7 +179,7 @@ class Repository @Inject constructor(
                 val response = libraryApi.getBook(barcode)
                 if(response.isSuccessful && response.body() != null){
                     // Book located on the server
-                    return response.body()!!.data
+                    return response.body()!!.data[0]
                 } else {
                     // Book does not exist in local or server data
                     return null
@@ -203,7 +213,7 @@ class Repository @Inject constructor(
             val response = libraryApi.getBook(barcode)
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the book
-                bookDao.insert(response.body()!!.data)
+                bookDao.insert(response.body()!!.data[0])
                 response.body()!!
             } else {
                 Log.d("API", "Failed to fetch the data.")

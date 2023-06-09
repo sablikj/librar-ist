@@ -38,13 +38,6 @@ interface LibraryApi {
         @Body library: Library
     ): Response<ResponseBody>
 
-    // Update library
-    @PUT("libs/edit")
-    suspend fun updateLibrary(
-        @Query("id") id: String,
-        @Body library: Library
-    ): Response<ResponseBody>
-
     //BOOK
 
     // Get one book

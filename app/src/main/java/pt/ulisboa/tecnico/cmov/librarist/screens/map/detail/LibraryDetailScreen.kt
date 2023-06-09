@@ -164,10 +164,9 @@ fun LibraryDetailScreen(
         }
     }
     // Updating library locally when it changes
-    /*
     LaunchedEffect(viewModel.libraryDetail.books.size) {
         viewModel.repository.updateLibrary(library)
-    }*/
+    }
 
     // Triggered after barcode is scanned
     if(viewModel.processBarCode.value){
@@ -187,7 +186,8 @@ fun LibraryDetailScreen(
                 }else{
                     if(viewModel.checkIn.value){
                         // Check-in
-                        viewModel.libraryDetail.books.add(book.barcode)
+                        //viewModel.libraryDetail.books.add(book.barcode)
+                        viewModel.repository.checkInBook(book, viewModel.libraryDetail)
                         Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
                     }else{
                         // Check-out

@@ -17,8 +17,6 @@ data class Book(
     @SerialName("title")
     val name: String = "",
     val author: String = "",
-    //@SerialName("libraryId")
-    //var libraryId: String="",
     @SerialName("photo") @Serializable(with = ByteArrayBase64Serializer::class)
     val image: ByteArray = byteArrayOf()
 )
@@ -32,9 +30,9 @@ data class BookListResponse(
 @Serializable
 data class BookResponse(
     @SerialName("data")
-    var data: Book
+    var data: List<Book>
 )
-
+@Serializable
 data class CheckInBook(
     @PrimaryKey(autoGenerate = false) @SerialName("bookCode")
     val barcode: String = "",
