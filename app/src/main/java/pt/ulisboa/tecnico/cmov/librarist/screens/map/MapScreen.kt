@@ -44,6 +44,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -104,6 +106,17 @@ fun MapScreen(
     var searchActive by remember { mutableStateOf(false) }
     val searchPredictions = remember { mutableStateListOf<AutocompletePrediction>() }
     val searchLocation by viewModel.searchLocation.observeAsState()
+
+    // Updating libraries after return to main page (favourite libs..)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.updateLibraries()
+                }
+            }
+        )
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()

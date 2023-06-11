@@ -116,7 +116,7 @@ class MapViewModel @Inject constructor(application: Application,
         }
     }
 
-    private fun updateLibraries() {
+    fun updateLibraries() {
         viewModelScope.launch {
             val libs = withContext(Dispatchers.IO) {
                repository.getLibraries()
