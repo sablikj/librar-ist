@@ -254,7 +254,7 @@ class Repository @Inject constructor(
 
     suspend fun getBookLibraries(title: String): List<Library>?{
         try {
-            val response = libraryApi.getBookLibraries(title)
+            val response = libraryApi.getBookLibraries("\"$title\"") // client-side fix for SQL error
 
             if(response.isSuccessful && response.body() != null){
                 val libraryIds = response.body()!!.data

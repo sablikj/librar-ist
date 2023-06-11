@@ -16,7 +16,7 @@ fun CircularProgressBar(isDisplayed: Boolean){
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 20.dp),
+                .padding(top = 50.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             CircularProgressIndicator(

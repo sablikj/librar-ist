@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -53,11 +55,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -85,6 +89,7 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.map.centerOnLocation
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LibraryDetailScreen(
+    navController: NavHostController,
     onBookClicked: (String) -> Unit
 ) {
     val viewModel = hiltViewModel<LibraryDetailViewModel>()
@@ -240,14 +245,26 @@ fun LibraryDetailScreen(
                             tint = if (library.favourite) Color.Red else Color.Gray
                         )
                     }
-                }
+                },
+                navigationIcon = { IconButton(
+                    onClick = { navController.popBackStack() },
+                    content = { Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_arrow_back_24),
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentSize(align = Alignment.Center)
+                    )}
+                )},
+
             )
         },
         content = {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 6.dp, vertical = 6.dp)
+                    .padding(top= 70.dp, bottom = 6.dp).padding(vertical = 6.dp)
                     .fillMaxWidth()
             ) {
                 CircularProgressBar(isDisplayed = loading.value)
@@ -379,13 +396,14 @@ fun LibraryDetailScreen(
                             }
                         }
                     }
+                    // Available books card
                     ElevatedCard(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(500.dp) // change to a height that suits your needs
+                            .height(300.dp)
                             .padding(vertical = 6.dp)
                     ) {
                         Row(
@@ -452,16 +470,19 @@ fun LibraryDetailScreen(
                                 }
                             }
                         }else{
-                            Text(
+                            Box(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 6.dp),
-                                text = "No available books",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                fontWeight = FontWeight.Bold,
-                            )
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No available books",
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                         }
                     }
                 }

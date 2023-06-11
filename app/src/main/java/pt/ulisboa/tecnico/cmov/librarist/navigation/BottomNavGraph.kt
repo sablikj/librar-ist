@@ -57,6 +57,7 @@ fun BottomNavGraph(navController: NavHostController) {
             ),
         ) { backStackEntry ->
             LibraryDetailScreen(
+                navController = navController,
                 onBookClicked = { barcode ->
                     if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
                         navController.navigate("${Constants.Routes.BOOK_DETAIL_ROUTE}/$barcode")
@@ -86,6 +87,7 @@ fun BottomNavGraph(navController: NavHostController) {
             ),
         ) { backStackEntry ->
             BookDetailScreen(
+                navController = navController,
                 onLibraryClicked = { libraryId ->
                     if(backStackEntry.getLifecycle().currentState == Lifecycle.State.RESUMED){
                         navController.navigate("${Constants.Routes.LIBRARY_DETAIL_ROUTE}/$libraryId")

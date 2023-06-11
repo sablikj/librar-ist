@@ -58,57 +58,47 @@ fun BookItem(book: Book, onDetailClicked: (String) -> Unit){
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Box(
-            Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Column {
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(CardDefaults.elevatedShape),
-                    painter = painter,
-                    contentDescription = book.name,
-                    contentScale = ContentScale.Crop,
+        Column {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(CardDefaults.elevatedShape),
+                painter = painter,
+                contentDescription = book.name,
+                contentScale = ContentScale.Crop,
 
-                    )
-                // Name
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 6.dp, vertical = 3.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = book.name,
-                        color = Color.Black,
-                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                // Author
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Text(
-                        text = book.author,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Divider(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-                    color = MaterialTheme.colorScheme.surface
-
+                )
+            // Name
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = book.name,
+                    color = Color.Black,
+                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            // Author
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Text(
+                    text = book.author,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

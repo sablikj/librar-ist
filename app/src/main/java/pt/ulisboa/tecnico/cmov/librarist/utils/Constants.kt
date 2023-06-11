@@ -14,7 +14,7 @@ object Constants {
     const val BOOK_KEYS_TABLE = "book_remote_keys"
 
     const val DATABASE_NAME = "librarist_database"
-    const val ITEMS_PER_PAGE = 8
+    const val ITEMS_PER_PAGE = 2
 
     // Permissions
     const val REQUEST_LOCATION_PERMISSION_CODE = 1
