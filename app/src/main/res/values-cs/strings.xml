@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LibrarIST</string>
+    <string name="map_title">Mapa</string>
+    <string name="book_search_title">Vyhledej knihy</string>
+</resources>

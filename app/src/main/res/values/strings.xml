@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LibrarIST</string>
+    <string name="map_title">Map</string>
+    <string name="book_search_title">Search Books</string>
 </resources>
