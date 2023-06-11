@@ -50,9 +50,10 @@ class LibraryDetailViewModel @Inject constructor(
 
     fun onBooksChanged(books: List<Book>) {
         _books.value = books
+        /*
         libraryDetail = libraryDetail.copy(
             books = books.map { it.barcode } as MutableList<String>
-        )
+        )*/
     }
 
     // Bar code scanner

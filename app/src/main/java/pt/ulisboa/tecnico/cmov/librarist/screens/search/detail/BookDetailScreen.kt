@@ -114,6 +114,7 @@ fun BookDetailScreen(
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
+                    .padding(top = 70.dp)
                     .padding(horizontal = 6.dp, vertical = 6.dp)
                     .fillMaxWidth()
             ) {
@@ -121,7 +122,6 @@ fun BookDetailScreen(
 
                 if (!loading.value) {
                     // Main card
-
                     ElevatedCard(
                         colors = CardDefaults.cardColors(
                             containerColor =  MaterialTheme.colorScheme.primary,
@@ -204,9 +204,9 @@ fun BookDetailScreen(
                         if (viewModel.libraries.isNotEmpty()) {
                             LazyColumn(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    .fillMaxSize()
+                                    .padding(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 items(viewModel.libraries) { lib ->
                                     Card(modifier = Modifier

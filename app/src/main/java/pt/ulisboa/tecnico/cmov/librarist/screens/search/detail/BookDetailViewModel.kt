@@ -33,7 +33,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BookDetailViewModel @Inject constructor(
     val repository: Repository,
-    val locationUtils: LocationUtils,
+    private val locationUtils: LocationUtils,
     savedStateHandle: SavedStateHandle,
     private val application: MapApplication
 ) : ViewModel() {
@@ -59,6 +59,7 @@ class BookDetailViewModel @Inject constructor(
 
     init {
         barcode?.let {
+            loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 // get location
                 locationUtils.getLastKnownLocation(application.applicationContext)?.let { location ->
@@ -71,9 +72,7 @@ class BookDetailViewModel @Inject constructor(
                 repository.getNotificationsForBook(barcode)?.let {
                     onNotificationsChanged(it.notifications)
                 }
-                withContext(Dispatchers.Main) {
-                    loading.value = true
-                }
+
                 // Book detail
                 repository.refreshBookDetail(barcode)
                 val bookDetailResult = repository.getBook(barcode)
@@ -81,7 +80,6 @@ class BookDetailViewModel @Inject constructor(
                     bookDetailResult?.let {
                         bookDetail = it
                     }
-                    loading.value = false
                 }
 
                 // Libraries
@@ -97,7 +95,6 @@ class BookDetailViewModel @Inject constructor(
         }
     }
 
-    //TODO: converter creation for getBook() fails for some reason sometimes
     @OptIn(DelicateCoroutinesApi::class)
     fun notifications() {
         if (barcode != null) {
@@ -118,7 +115,7 @@ class BookDetailViewModel @Inject constructor(
     }
 
     // Getting distance from the library
-    fun sortByDistance(libraries: List<Library>): List<Library>{
+    private fun sortByDistance(libraries: List<Library>): List<Library>{
         if(lastKnownLocation.value != null){
             val userLocation = lastKnownLocation.value?.let { LatLng(it.latitude, lastKnownLocation.value!!.longitude) }
             val sortedLibraries = mutableListOf<Library>()

@@ -144,7 +144,7 @@ class Repository @Inject constructor(
             val response = libraryApi.getLibraryDetail(id)
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the libraries
-                val library = response.body()?.data
+                val library = response.body()?.data?.get(0)
                 if (library != null) {
                     libraryDao.insert(library)
                 }else{
@@ -267,11 +267,16 @@ class Repository @Inject constructor(
 
                 // Getting libraries
                 var libraries = mutableListOf<Library>()
+                val libraryIdsSet = mutableSetOf<String>()
                 for (lib in libraryIds){
                     try {
                         val libResponse = libraryApi.getLibraryDetail(lib.libraryId)
                         if(libResponse.isSuccessful && libResponse.body() !== null){
-                            libraries.add(libResponse.body()!!.data)
+                            val result = libResponse.body()!!.data[0]
+                            if(!libraryIdsSet.contains(result.id)){
+                                libraryIdsSet.add(result.id)
+                                libraries.add(result)
+                            }
                         }
                     }catch (e: Exception){
                         Log.d("Error while getting libraries for book", e.toString())

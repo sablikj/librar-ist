@@ -1,7 +1,5 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.search
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
