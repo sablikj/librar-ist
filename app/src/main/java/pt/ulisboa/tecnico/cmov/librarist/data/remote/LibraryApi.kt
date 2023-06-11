@@ -70,7 +70,7 @@ interface LibraryApi {
 
     // search Book
     //TODO: add endpoint
-    @GET("")
+    @GET("search")
     suspend fun searchBooks(
         @Query("search") query: String,
         @Query("limit") limit: Int
