@@ -50,6 +50,18 @@ class Repository @Inject constructor(
         }
     }
 
+    suspend fun checkOutBook(book: Book, library: Library){
+        // First update library locally - removed ID
+        libraryDao.updateLibrary(library)
+
+        // Try to update it on the server
+        try {
+            libraryApi.checkOut(barcode = book.barcode, libraryId = library.id, id = book.id)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error during check-out on the server", e)
+        }
+    }
+
     suspend fun getLibraries(): List<Library> {
         // get libraries from api
         try {
@@ -149,15 +161,9 @@ class Repository @Inject constructor(
     fun getLibraryDetail(id: String): Flow<Library> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
+    // Locally only - for favorite libs
     suspend fun updateLibrary(library: Library){
         libraryDao.updateLibrary(library)
-
-        // Try to update it on the server
-        try { //TODO: fix
-            //libraryApi.updateLibrary(library.id, library)
-        } catch (e: Exception) {
-            Log.e("Repository", "Error adding library to server", e)
-        }
     }
 
     suspend fun addBook(book: Book) {

@@ -87,7 +87,7 @@ interface LibraryApi {
     suspend fun checkOut(
         @Query("barcode") barcode: String,
         @Query("libraryId") libraryId: String,
-        @Body book: Book
+        @Query("id") id: String
     ): Response<ResponseBody>
 
     // For display in library detail

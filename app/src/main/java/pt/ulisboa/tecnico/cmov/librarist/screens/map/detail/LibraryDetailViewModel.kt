@@ -50,6 +50,9 @@ class LibraryDetailViewModel @Inject constructor(
 
     fun onBooksChanged(books: List<Book>) {
         _books.value = books
+        libraryDetail = libraryDetail.copy(
+            books = books.map { it.barcode } as MutableList<String>
+        )
     }
 
     // Bar code scanner
@@ -86,7 +89,6 @@ class LibraryDetailViewModel @Inject constructor(
         val scanner = GmsBarcodeScanning.getClient(context, options)
         scanner.startScan()
             .addOnSuccessListener { barcode ->
-                // Task completed successfully
                 scanResult.value = barcode.rawValue.toString()
                 processBarCode.value = true
                 checkIn.value = checkInBook
@@ -104,8 +106,7 @@ class LibraryDetailViewModel @Inject constructor(
 
         // Updating library locally
         viewModelScope.launch {
-            // TODO: fix to local only
-            repository.addLibrary(libraryDetail)
+            repository.updateLibrary(libraryDetail)
         }
     }
 
@@ -124,6 +125,7 @@ class LibraryDetailViewModel @Inject constructor(
         // Saving book to db and calling check-in
         viewModelScope.launch {
             repository.addBook(book)
+            libraryDetail.books.add(book.barcode)
             repository.checkInBook(book, libraryDetail)
         }
     }

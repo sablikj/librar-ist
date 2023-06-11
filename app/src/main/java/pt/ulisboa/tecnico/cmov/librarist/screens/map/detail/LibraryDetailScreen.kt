@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -168,7 +167,6 @@ fun LibraryDetailScreen(
     }
     // Updating library locally when it changes
     LaunchedEffect(viewModel.libraryDetail.books.size) {
-        //viewModel.repository.updateLibrary(library)
         viewModel.initLibrary()
     }
 
@@ -184,24 +182,25 @@ fun LibraryDetailScreen(
                         viewModel.showBookDialog.value = true
                     } else{
                         // Check-out
-                        Log.d("bookTest", "dorime")
                         Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     if(viewModel.checkIn.value){
                         // Check-in
+                        viewModel.libraryDetail.books.add(book.barcode)
                         viewModel.repository.checkInBook(book, viewModel.libraryDetail)
                         Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
-                        if (viewModel.libraryDetail.books.any { it == book.barcode }) {
+                        if (viewModel.libraryDetail.books.contains(book.barcode)) {
                             val index = viewModel.libraryDetail.books.indexOfFirst { it == book.barcode }
                             if (index >= 0) {
+                                // remove locally, then call api
                                 viewModel.libraryDetail.books.removeAt(index)
+                                viewModel.repository.checkOutBook(book, viewModel.libraryDetail)
                             }
                         }else{
-                            Log.d("bookTest", "dorime2")
                             Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -223,6 +222,10 @@ fun LibraryDetailScreen(
         onDispose {
             viewModel.currentImageBytes.removeObserver(imageObserver)
         }
+    }
+
+    LaunchedEffect(books.size) {
+        viewModel.getBooksInLibrary(library.id)
     }
 
     Scaffold(
@@ -423,9 +426,7 @@ fun LibraryDetailScreen(
                                 fontWeight = FontWeight.Bold,
                             )
                         }
-                        LaunchedEffect(books.size) {
-                            viewModel.getBooksInLibrary(library.id)
-                        }
+
                         //Available books
                         if (books.isNotEmpty()) {
                             LazyColumn(
