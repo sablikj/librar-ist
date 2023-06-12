@@ -24,6 +24,10 @@ interface LibraryApi {
     @GET("libs")
     suspend fun getLibraries(): Response<LibraryListResponse>
 
+    // All libraries metered
+    @GET("/libs/metered")
+    suspend fun getLibrariesMetered(): Response<LibraryListResponse>
+
     // Get one library
     @GET("get_library_by_id")
     suspend fun getLibraryDetail(
@@ -44,6 +48,12 @@ interface LibraryApi {
         @Query("barcode") id: String
     ): Response<BookResponse>
 
+    // Get one book metered
+    @GET("get_book_by_barcode_metered")
+    suspend fun getBookMetered(
+        @Query("barcode") id: String
+    ): Response<BookResponse>
+
     // Get libraries where book is available
     @GET("get_libraries_by_book_title")
     suspend fun getBookLibraries(
@@ -61,9 +71,16 @@ interface LibraryApi {
     ): Response<ResponseBody>
 
     // search Book
-    //TODO: add endpoint
     @GET("search")
     suspend fun searchBooks(
+        @Query("search") query: String,
+        @Query("offset") offset: Int,
+        @Query("limit") limit: Int
+    ): BookListResponse
+
+    // search Book metered
+    @GET("search_metered")
+    suspend fun searchBooksMetered(
         @Query("search") query: String,
         @Query("offset") offset: Int,
         @Query("limit") limit: Int
@@ -86,6 +103,12 @@ interface LibraryApi {
     // For display in library detail
     @GET("available_books_in_library/{id}")
     suspend fun getAvailableBooksInLibrary(
+        @Path("id") id: String
+    ): Response<BookListResponse>
+
+    // For display in library detail - metered
+    @GET("available_books_in_library_metered/{id}")
+    suspend fun getAvailableBooksInLibraryMetered(
         @Path("id") id: String
     ): Response<BookListResponse>
 }

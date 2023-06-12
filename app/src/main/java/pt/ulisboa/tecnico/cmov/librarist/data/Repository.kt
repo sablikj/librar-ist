@@ -1,10 +1,16 @@
 package pt.ulisboa.tecnico.cmov.librarist.data
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
+import androidx.core.net.ConnectivityManagerCompat
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.paging.BookPagingSource
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
@@ -14,6 +20,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.ITEMS_PER_PAGE
+import pt.ulisboa.tecnico.cmov.librarist.utils.checkNetworkType
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -62,10 +69,20 @@ class Repository @Inject constructor(
         }
     }
 
-    suspend fun getLibraries(): List<Library> {
+    suspend fun getLibraries(context: Context): List<Library> {
         // get libraries from api
         try {
-            val response = libraryApi.getLibraries()
+            val (isWiFi, isMetered) = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi && !isMetered) {
+                libraryApi.getLibraries()
+            } else if (!isWiFi && isMetered) {
+                libraryApi.getLibrariesMetered()
+            } else {
+                return emptyList()
+            }
+
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the libraries
                 val libraries = response.body()?.data ?: emptyList()
@@ -85,6 +102,7 @@ class Repository @Inject constructor(
         }
         return localLibraries
     }
+
 
     suspend fun getNotificationsForBook(barcode: String): Notifications? {
         try {
@@ -114,10 +132,20 @@ class Repository @Inject constructor(
         }
     }
 
-    suspend fun getAvailableBooksInLibraries(id: String): List<Book> {
+    suspend fun getAvailableBooksInLibraries(context: Context, id: String): List<Book> {
         // get books from api
         try {
-            val response = libraryApi.getAvailableBooksInLibrary(id)
+            val (isWiFi, isMetered) = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi && !isMetered) {
+                libraryApi.getAvailableBooksInLibrary(id)
+            } else if (!isWiFi && isMetered) {
+                libraryApi.getAvailableBooksInLibraryMetered(id)
+            } else {
+                return emptyList()
+            }
+
             if (response.isSuccessful && response.body() != null) {
                 // If the API call is successful, update the local database and return the libraries
                 val books = response.body()?.data ?: emptyList()
@@ -177,7 +205,7 @@ class Repository @Inject constructor(
     }
 
     // Mainly for book check-in
-    suspend fun getBook(barcode: String): Book? {
+    suspend fun getBook(context: Context, barcode: String): Book? {
         // Look for book in local data
         val localBook = bookDao.getBookDetail(barcode)
 
@@ -185,7 +213,17 @@ class Repository @Inject constructor(
         if (localBook == null){
             // Look for book in server
             try {
-                val response = libraryApi.getBook(barcode)
+                val (isWiFi, isMetered) = checkNetworkType(context)
+
+                // Use the appropriate API based on the network connection
+                val response = if (isWiFi && !isMetered) {
+                    libraryApi.getBook(barcode)
+                } else if (!isWiFi && isMetered) {
+                    libraryApi.getBookMetered(barcode)
+                } else {
+                    return null
+                }
+
                 if(response.isSuccessful && response.body() != null){
                     // Book located on the server
                     return response.body()!!.data[0]
@@ -193,7 +231,7 @@ class Repository @Inject constructor(
                     // Book does not exist in local or server data
                     return null
                 }
-            }catch (e: Exception){
+            } catch (e: Exception){
                 Log.d("ErrorLaunchDetail", e.toString())
             }
         }
@@ -201,12 +239,13 @@ class Repository @Inject constructor(
         return localBook
     }
 
+
     // Search books
     fun searchBooks(query: String): Flow<PagingData<Book>> {
         return Pager(
             config = PagingConfig(pageSize = ITEMS_PER_PAGE),
             pagingSourceFactory = {
-                BookPagingSource(libraryApi = libraryApi, query = query)
+                BookPagingSource(libraryApi = libraryApi, query = query, application = MapApplication())
             }
         ).flow
     }
@@ -227,17 +266,27 @@ class Repository @Inject constructor(
         return null
     }
 
-    suspend fun refreshBookDetail(barcode: String) {
+    suspend fun refreshBookDetail(context: Context, barcode: String) {
         try {
-            val response = libraryApi.getBook(barcode)
+            val (isWiFi, isMetered) = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi && !isMetered) {
+                libraryApi.getBook(barcode)
+            } else if (!isWiFi && isMetered) {
+                libraryApi.getBookMetered(barcode)
+            } else {
+                Log.d("API", "No network available.")
+                return
+            }
+
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the book
                 bookDao.insert(response.body()!!.data[0])
-                response.body()!!
             } else {
                 Log.d("API", "Failed to fetch the data.")
             }
-        }catch (e: Exception){
+        } catch (e: Exception){
             Log.d("ErrorLaunchDetail", e.toString())
         }
     }

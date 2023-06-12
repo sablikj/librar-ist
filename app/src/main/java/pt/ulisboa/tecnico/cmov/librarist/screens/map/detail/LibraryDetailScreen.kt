@@ -174,7 +174,7 @@ fun LibraryDetailScreen(
     if(viewModel.processBarCode.value){
         LaunchedEffect(viewModel.scanResult.value) {
             if(viewModel.scanResult.value != ""){
-                val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(it)}}
+                val book = withContext(Dispatchers.IO) {viewModel.scanResult.value?.let { viewModel.repository.getBook(context, it)}}
 
                 if (book == null || book.barcode == "") {
                     if(viewModel.checkIn.value){

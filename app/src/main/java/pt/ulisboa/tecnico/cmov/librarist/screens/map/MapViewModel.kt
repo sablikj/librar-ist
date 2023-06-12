@@ -94,13 +94,13 @@ class MapViewModel @Inject constructor(application: Application,
     val currentImageBytes: MutableLiveData<ByteArray> = MutableLiveData()
     // Location
     @SuppressLint("StaticFieldLeak")
-    private val context: Context = application.applicationContext
+    val context: Context = application.applicationContext
     // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
     var searchLocation = MutableLiveData<LatLng?>(null)
 
     init {
-        updateLibraries()
+        updateLibraries(application.applicationContext)
     }
 
     // Converting URI to byteArray
@@ -112,14 +112,14 @@ class MapViewModel @Inject constructor(application: Application,
     fun addLibrary(library: Library) {
         viewModelScope.launch {
             repository.addLibrary(library)
-            updateLibraries()
+            updateLibraries(context)
         }
     }
 
-    fun updateLibraries() {
+    fun updateLibraries(context: Context) {
         viewModelScope.launch {
             val libs = withContext(Dispatchers.IO) {
-               repository.getLibraries()
+               repository.getLibraries(context)
             }
             state.value.libraries.value = libs
         }
