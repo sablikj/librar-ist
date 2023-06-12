@@ -130,7 +130,7 @@ fun MapScreen(
 
 
     val requestMultiplePermissions =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        rememberLauncherForActivityResult(contract=ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.entries.forEach {
                 if (it.value) {
                     camStorGranted = true
@@ -339,7 +339,18 @@ fun MapScreen(
                         title = library.name,
                         onInfoWindowClick = {
                             scope.launch {
-                                onMarkerClicked(library.id)
+                                if(!camStorGranted){
+                                    //TODO: fix permissions when navigating to the detail
+                                    Log.d("Permissionss", "test")
+                                    val permissions = arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    requestMultiplePermissions.launch(permissions)
+                                }else{
+                                    camStorGranted = true
+                                }
+                                if(camStorGranted){
+                                    onMarkerClicked(library.id)
+                                }
+
                             }
                         }
                     )
