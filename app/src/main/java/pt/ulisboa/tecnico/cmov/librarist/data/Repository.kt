@@ -109,7 +109,6 @@ class Repository @Inject constructor(
     suspend fun addNotifications(notifications: Notifications) {
         try {
             notificationsDao.addNotification(notifications)
-
         } catch (e: Exception) {
             Log.d("addNotifications", "Error during GET: $e")
         }

@@ -5,7 +5,6 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.BookLibResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.BookListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.BookResponse
-import pt.ulisboa.tecnico.cmov.librarist.model.BooksInLibraryResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
@@ -13,7 +12,6 @@ import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -46,12 +44,6 @@ interface LibraryApi {
         @Query("barcode") id: String
     ): Response<BookResponse>
 
-    // Get books from BookLib
-    @GET("get_booklib_by_barcode")
-    suspend fun getBookLibByBarcode(
-        @Query("barcode") id: String
-    ): Response<BookLibResponse>
-
     // Get libraries where book is available
     @GET("get_libraries_by_book_title")
     suspend fun getBookLibraries(
@@ -73,6 +65,7 @@ interface LibraryApi {
     @GET("search")
     suspend fun searchBooks(
         @Query("search") query: String,
+        @Query("offset") offset: Int,
         @Query("limit") limit: Int
     ): BookListResponse
 
@@ -95,10 +88,4 @@ interface LibraryApi {
     suspend fun getAvailableBooksInLibrary(
         @Path("id") id: String
     ): Response<BookListResponse>
-
-    // Checking if exists
-    @GET("books_in_library/{id}")
-    suspend fun getBooksInLibrary(
-        @Path("id") id: String
-    ): Response<BooksInLibraryResponse>
 }

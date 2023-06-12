@@ -33,13 +33,3 @@ data class LibraryListResponse(var data: List<Library>)
 @Serializable
 data class LibraryResponse(var data: List<Library>)
 //TODO: prompt for permissions when checking in/out books
-
-@Serializable
-data class BooksInLibrary(
-    val bookCode: String,
-    val id: String,
-    val libraryId: String
-)
-
-@Serializable
-data class BooksInLibraryResponse(var data: List<BooksInLibrary>)
