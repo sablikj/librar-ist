@@ -5,7 +5,6 @@
 
 ## Mandatory features
 ### TODO
-* **(Search tab)** Fix remote mediator - currently not loading new items
 * Fix permissions
 * When a user searches for books using a search filter, search results can be downloaded only as scrolling requires - paging lib
 * Show placeholder images when user is on the metered connection
