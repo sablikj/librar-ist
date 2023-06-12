@@ -193,19 +193,19 @@ fun LibraryDetailScreen(
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
-                        if (viewModel.libraryDetail.books.contains(book.barcode)) {
-                            val index = viewModel.libraryDetail.books.indexOfFirst { it == book.barcode }
-                            if (index >= 0) {
-                                // remove locally, then call api
-                                viewModel.libraryDetail.books.removeAt(index)
-                                viewModel.repository.checkOutBook(book, viewModel.libraryDetail)
-                            }
+                        val bookInLibrary = viewModel.books.value.find { it.barcode == book.barcode }
+                        if (bookInLibrary != null) {
+                            val updatedBooks = viewModel.books.value.toMutableList()
+                            updatedBooks.remove(bookInLibrary)
+                            viewModel.onBooksChanged(updatedBooks)
+                            viewModel.repository.checkOutBook(book, viewModel.libraryDetail)
+
+                            Toast.makeText(context, "Book was successfully checked-out.", Toast.LENGTH_SHORT).show()
                         }else{
                             Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
-
             }
             else{
                 Toast.makeText(context, "Book was not scanned successfully", Toast.LENGTH_SHORT).show()
@@ -310,7 +310,6 @@ fun LibraryDetailScreen(
                                         viewModel.ProcessBook(context, true)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
-                                    // Uses ButtonDefaults.ContentPadding by default
                                     contentPadding = PaddingValues(
                                         start = 20.dp,
                                         top = 12.dp,
@@ -318,7 +317,6 @@ fun LibraryDetailScreen(
                                         bottom = 12.dp
                                     )
                                 ) {
-                                    // Inner content including an icon and a text label
                                     Icon(
                                         Icons.Filled.Add,
                                         contentDescription = "Add book",
@@ -334,7 +332,6 @@ fun LibraryDetailScreen(
                                         viewModel.ProcessBook(context, false)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                                    // Uses ButtonDefaults.ContentPadding by default
                                     contentPadding = PaddingValues(
                                         start = 20.dp,
                                         top = 12.dp,

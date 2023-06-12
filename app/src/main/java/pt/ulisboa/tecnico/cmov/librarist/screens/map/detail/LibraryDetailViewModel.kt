@@ -50,10 +50,6 @@ class LibraryDetailViewModel @Inject constructor(
 
     fun onBooksChanged(books: List<Book>) {
         _books.value = books
-        /*
-        libraryDetail = libraryDetail.copy(
-            books = books.map { it.barcode } as MutableList<String>
-        )*/
     }
 
     // Bar code scanner
@@ -75,7 +71,6 @@ class LibraryDetailViewModel @Inject constructor(
                 //get books for library
                 val currentBooks = getBooksInLibrary(libraryId)
                 onBooksChanged(currentBooks)
-                // TODO: call getLibrary instead
                 repository.getLibraryDetail(it).collect { detail ->
                     withContext(Dispatchers.Main) {
                         libraryDetail = detail
