@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -98,6 +97,7 @@ fun MapScreen(
     // Permissions
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
+    camStorGranted = (viewModel.checkCameraPermission() && viewModel.checkStoragePermission())
     locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
 
@@ -194,7 +194,6 @@ fun MapScreen(
             viewModel.currentImageBytes.removeObserver(imageObserver)
         }
     }
-
     // Getting current location
     // Triggered when location permission is granted or on permission check
     LaunchedEffect(locationPermissionGranted) {
@@ -206,6 +205,16 @@ fun MapScreen(
         ) {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
+        if (!camStorGranted) {
+            //TODO: fix permissions when navigating to the detail
+            Log.d("Permissionss", "test")
+            val permissions =
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            requestMultiplePermissions.launch(permissions)
+        } else {
+            camStorGranted = true
+        }
+
         // Center map on current location
         val loc =  viewModel.locationUtils.getLastKnownLocation(context)
         if (loc != null) {
@@ -315,18 +324,8 @@ fun MapScreen(
                         state = MarkerState(position = library.location),
                         title = library.name,
                         onInfoWindowClick = {
-
                             // Open only if Camera and storage permissions are granted
                             scope.launch {
-                                // Check camera permission first
-                                if(!camStorGranted){
-                                    //TODO: fix permissions when navigating to the detail
-                                    Log.d("Permissionss", "test")
-                                    val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                    requestMultiplePermissions.launch(permissions)
-                                }else{
-                                    camStorGranted = true
-                                }
                                 if(camStorGranted) {
                                     onMarkerClicked(library.id)
                                 }
@@ -339,18 +338,9 @@ fun MapScreen(
                         title = library.name,
                         onInfoWindowClick = {
                             scope.launch {
-                                if(!camStorGranted){
-                                    //TODO: fix permissions when navigating to the detail
-                                    Log.d("Permissionss", "test")
-                                    val permissions = arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                    requestMultiplePermissions.launch(permissions)
-                                }else{
-                                    camStorGranted = true
-                                }
-                                if(camStorGranted){
+                                if (camStorGranted) {
                                     onMarkerClicked(library.id)
                                 }
-
                             }
                         }
                     )

@@ -143,6 +143,15 @@ class MapViewModel @Inject constructor(application: Application,
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    @Composable
+    fun checkStoragePermission(): Boolean {
+        val context = LocalContext.current
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
     ////////////////////////////////
     // Searchbar functions
     fun getAutocompletePredictions(
