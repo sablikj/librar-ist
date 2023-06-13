@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.data
 
+import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -25,7 +26,8 @@ import javax.inject.Inject
 
 class Repository @Inject constructor(
     private val libraryApi: LibraryApi,
-    private val libraryDatabase: LibraryDatabase
+    private val libraryDatabase: LibraryDatabase,
+    private val application: Application
 ) {
     private val libraryDao = libraryDatabase.libraryDao()
     private val bookDao = libraryDatabase.bookDao()
@@ -243,9 +245,12 @@ class Repository @Inject constructor(
     // Search books
     fun searchBooks(query: String): Flow<PagingData<Book>> {
         return Pager(
-            config = PagingConfig(pageSize = ITEMS_PER_PAGE),
+            config = PagingConfig(
+                pageSize = ITEMS_PER_PAGE,
+                prefetchDistance = 4
+            ),
             pagingSourceFactory = {
-                BookPagingSource(libraryApi = libraryApi, query = query, application = MapApplication())
+                BookPagingSource(libraryApi = libraryApi, query = query, application = application)
             }
         ).flow
     }

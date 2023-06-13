@@ -33,6 +33,7 @@ class BookPagingSource(
             } else {
                 emptyList()
             }
+            Log.d("paging", results.toString())
 
             if (results.isNotEmpty()) {
                 LoadResult.Page(
@@ -48,11 +49,15 @@ class BookPagingSource(
                 )
             }
         } catch (e: Exception) {
+            Log.d("paging", e.toString())
             LoadResult.Error(e)
         }
     }
 
     override fun getRefreshKey(state: PagingState<Int, Book>): Int? {
-        return state.anchorPosition
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
     }
 }
