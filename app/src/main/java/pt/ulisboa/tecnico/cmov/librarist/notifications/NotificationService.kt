@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.notifications
 
+import android.app.Application
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,6 +10,7 @@ import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 
 
 class NotificationService(
+    private val application: Application,
     private val repository: Repository,
     private val notificationsController: NotificationsController
 ) {
@@ -25,10 +27,10 @@ class NotificationService(
                             repository.getBookLib()?.let { bookLibs ->
                                 for (book in bookLibs) {
                                     if (book.available && favs.contains(book.libraryId)) {
-                                        val bookname = repository.getBook(book.barcode)?.name
+                                        val bookname = repository.getBook(application.applicationContext, book.barcode)?.name
                                         showNotification(
                                             "Book available",
-                                            bookname + " is available now",
+                                            "$bookname is available now",
                                         )
                                         result = true
                                         return@launch

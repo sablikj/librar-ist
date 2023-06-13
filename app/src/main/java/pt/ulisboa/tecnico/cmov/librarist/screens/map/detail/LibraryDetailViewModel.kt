@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 
+import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
@@ -32,6 +33,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryDetailViewModel @Inject constructor(
     val repository: Repository,
+    val application: Application,
     val imageUtils: ImageUtils,
     savedStateHandle: SavedStateHandle,
     private val contentResolver: ContentResolver
@@ -132,7 +134,7 @@ class LibraryDetailViewModel @Inject constructor(
         var books= emptyList<Book>()
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                books = repository.getAvailableBooksInLibraries(id)
+                books = repository.getAvailableBooksInLibraries(application.applicationContext, id)
                 onBooksChanged(books)
             } catch (t: Throwable) {
                 Log.d("ErrorLaunchDetail", t.toString())

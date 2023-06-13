@@ -7,7 +7,6 @@
 ### TODO
 * Fix permissions
 * When a user searches for books using a search filter, search results can be downloaded only as scrolling requires - paging lib
-* Show placeholder images when user is on the metered connection
 * When user is on the WIFI, preload the library data for libraries within a 10km radius and their respective books
 
 
@@ -21,6 +20,7 @@
   * a map of available free libraries.
   * a book search screen.
 * The map can be dragged around to show more libraries.
+* Show placeholder images when user is on the metered connection
 * The book search screen allows users to see the full list of books ever donated to any library managed from within the App and to filter it down with a text search
 * The user should be able to center the map on their current location at the press of a button. 
 * A button to enable/ disable notifications of when the book becomes available in one of the user’s favorite libraries

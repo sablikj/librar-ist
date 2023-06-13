@@ -35,13 +35,13 @@ class BookDetailViewModel @Inject constructor(
     val repository: Repository,
     private val locationUtils: LocationUtils,
     savedStateHandle: SavedStateHandle,
-    private val application: MapApplication
+    private val application: MapApplication,
 ) : ViewModel() {
 
     val loading = mutableStateOf(false)
     private val barcode: String? = savedStateHandle[Constants.Routes.BOOK_DETAIL_ID]
     private val notificationController = NotificationsController(application.applicationContext)
-    private val notificationService = NotificationService(repository, notificationController)
+    private val notificationService = NotificationService(application, repository, notificationController)
     private val _notifications = MutableStateFlow<Boolean>(false)
     val notifications: StateFlow<Boolean> = _notifications
     private val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
@@ -74,8 +74,8 @@ class BookDetailViewModel @Inject constructor(
                 }
 
                 // Book detail
-                repository.refreshBookDetail(barcode)
-                val bookDetailResult = repository.getBook(barcode)
+                repository.refreshBookDetail(application.applicationContext, barcode)
+                val bookDetailResult = repository.getBook(application.applicationContext, barcode)
                 withContext(Dispatchers.Main) {
                     bookDetailResult?.let {
                         bookDetail = it

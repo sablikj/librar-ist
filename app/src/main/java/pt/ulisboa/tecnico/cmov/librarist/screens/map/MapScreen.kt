@@ -112,7 +112,7 @@ fun MapScreen(
         lifecycleOwner.lifecycle.addObserver(
             LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME) {
-                    viewModel.updateLibraries()
+                    viewModel.updateLibraries(context)
                 }
             }
         )
