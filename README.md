@@ -5,7 +5,6 @@
 
 ## Mandatory features
 ### TODO
-* Fix permissions
 * When a user searches for books using a search filter, search results can be downloaded only as scrolling requires - paging lib
 * When user is on the WIFI, preload the library data for libraries within a 10km radius and their respective books
 
