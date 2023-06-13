@@ -7,12 +7,11 @@
 ### TODO
 * When a user searches for books using a search filter, search results can be downloaded only as scrolling requires - paging lib
 * When user is on the WIFI, preload the library data for libraries within a 10km radius and their respective books
+* When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
 
 
 ### Mandatory but won't do
-* Application should be aware of its location and should automatically open free library information panels when close to the library (e.g. within 100m) - Stupid idea
-* When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency - Don't have enough server resources to constantly check with API for updates.. 
-
+* Application should be aware of its location and should automatically open free library information panels when close to the library (e.g. within 100m)
 
 ### Complete
 * Two main screens: 
