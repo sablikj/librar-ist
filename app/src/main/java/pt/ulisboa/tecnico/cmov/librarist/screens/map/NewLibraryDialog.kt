@@ -56,14 +56,14 @@ fun NewLibraryDialog(
 
     AlertDialog(
         onDismissRequest = {},
-        title = { Text("New library") },
+        title = { Text(context.getString(R.string.new_library)) },
         text = {
             Column {
                 // Name
                 TextField(
                     value = name.value,
                     onValueChange = { newName -> name.value = newName },
-                    label = { Text("Name") }
+                    label = { Text(context.getString(R.string.library_name)) }
                 )
 
                 // If no is available address, display location instead
@@ -73,14 +73,14 @@ fun NewLibraryDialog(
                         value = "${location.value.latitude} | ${location.value.longitude}",
                         enabled = false,
                         onValueChange = {},
-                        label = { Text("Location") }
+                        label = { Text(context.getString(R.string.location)) }
                     )
                 }else{
                     // Address
                     TextField(
                         value = address.value,
                         onValueChange = { newAddress: String -> address.value = newAddress },
-                        label = { Text("Address") }
+                        label = { Text(context.getString(R.string.library_address)) }
                     )
                 }
                 Spacer(modifier = Modifier.padding(PaddingValues(8.dp)),)
@@ -118,13 +118,13 @@ fun NewLibraryDialog(
                         showCamera.value = true
                         shouldDismiss.value = true
                     }) {
-                    Text("Take Photo")
+                    Text(context.getString(R.string.take_photo))
                 }
                 Button(onClick = {
                     if(photo_uri.value.isEmpty()){
-                        Toast.makeText(context, "Photo of the library is required.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.library_photo_required), Toast.LENGTH_SHORT).show()
                     }else if (name.value.isEmpty()){
-                        Toast.makeText(context, "Name of the library is required.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.library_name_required), Toast.LENGTH_SHORT).show()
                     }
                     else{
                         viewModel.uriToImage(Uri.parse(photo_uri.value))
@@ -132,7 +132,7 @@ fun NewLibraryDialog(
                         addNewLibrary.value = true
                     }
                 }) {
-                    Text("Confirm")
+                    Text(context.getString(R.string.confirm))
                 }
             }
         }

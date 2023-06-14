@@ -2,9 +2,11 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +26,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -33,18 +38,18 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -60,12 +65,19 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import java.util.*
+import android.content.res.Configuration
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun MapScreen(
-    state: MutableState<MapState>,
+    state: MapState,
     onMarkerClicked: (String) -> Unit,
     viewModel: MapViewModel = hiltViewModel()
 ) {
@@ -97,7 +109,6 @@ fun MapScreen(
     // Permissions
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
-    //camStorGranted = (viewModel.checkCameraPermission() && viewModel.checkStoragePermission())
     locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
 
@@ -106,17 +117,6 @@ fun MapScreen(
     var searchActive by remember { mutableStateOf(false) }
     val searchPredictions = remember { mutableStateListOf<AutocompletePrediction>() }
     val searchLocation by viewModel.searchLocation.observeAsState()
-
-    // Updating libraries after return to main page (favourite libs..)
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.addObserver(
-            LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    viewModel.updateLibraries(context)
-                }
-            }
-        )
-    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -130,7 +130,7 @@ fun MapScreen(
 
 
     val requestMultiplePermissions =
-        rememberLauncherForActivityResult(contract=ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.entries.forEach {
                 if (it.value) {
                     camStorGranted = true
@@ -162,7 +162,7 @@ fun MapScreen(
                     books = mutableListOf()
                 )
                 viewModel.addLibrary(newLibrary)
-                Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getText(R.string.library_added), Toast.LENGTH_SHORT).show()
 
                 // Reset the trigger after the library has been added
                 addNewLibrary.value = false
@@ -194,6 +194,7 @@ fun MapScreen(
             viewModel.currentImageBytes.removeObserver(imageObserver)
         }
     }
+
     // Getting current location
     // Triggered when location permission is granted or on permission check
     LaunchedEffect(locationPermissionGranted) {
@@ -205,22 +206,9 @@ fun MapScreen(
         ) {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
-        if (!camStorGranted) {
-            //TODO: fix permissions when navigating to the detail
-            Log.d("Permissionss", "test")
-            val permissions =
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            requestMultiplePermissions.launch(permissions)
-        } else {
-            camStorGranted = true
-        }
-
         // Center map on current location
-        val loc =  viewModel.locationUtils.getLastKnownLocation(context)
-        if (loc != null) {
-            state.value.lastKnownLocation.value = LatLng(loc.latitude, loc.longitude)
-        }
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(state.value.lastKnownLocation.value, 18f)
+        viewModel.getLastKnownLocation(context)
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(state.lastKnownLocation, 18f)
     }
 
     // Triggered when lastKnownLocation is updated
@@ -235,11 +223,11 @@ fun MapScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text(text = "Permission Denied") },
-            text = { Text(text = "Some features won't work without the permissions.") },
+            title = { Text(text = context.getString(R.string.permission_denied)) },
+            text = { Text(text = context.getString(R.string.permission_denied_description)) },
             confirmButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text(text = "OK")
+                    Text(text = context.getString(R.string.ok))
                 }
             }
         )
@@ -270,7 +258,7 @@ fun MapScreen(
                 searchActive = it
             },
             placeholder = {
-                Text(text = "Search")
+                Text(text = context.getString(R.string.search))
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
@@ -324,8 +312,18 @@ fun MapScreen(
                         state = MarkerState(position = library.location),
                         title = library.name,
                         onInfoWindowClick = {
+
                             // Open only if Camera and storage permissions are granted
                             scope.launch {
+                                // Check camera permission first
+                                if(!camStorGranted){
+                                    //TODO: fix permissions when navigating to the detail
+                                    Log.d("Permissionss", "test")
+                                    val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    requestMultiplePermissions.launch(permissions)
+                                }else{
+                                    camStorGranted = true
+                                }
                                 if(camStorGranted) {
                                     onMarkerClicked(library.id)
                                 }
@@ -338,9 +336,7 @@ fun MapScreen(
                         title = library.name,
                         onInfoWindowClick = {
                             scope.launch {
-                                if (camStorGranted) {
-                                    onMarkerClicked(library.id)
-                                }
+                                onMarkerClicked(library.id)
                             }
                         }
                     )
@@ -371,12 +367,12 @@ fun MapScreen(
             // Open only if Camera and storage permissions are granted
             if(camStorGranted){
                 ComposeMapCenterPointMapMarker(scope, showLibraryDialog,
-                    state.value.lastKnownLocation.value, viewModel.location, showPin)
+                    lastKnownLocation!!, viewModel.location, showPin)
             }
         }
 
         if (showLibraryDialog.value) {
-            address.value = viewModel.locationUtils.getReadableLocation(viewModel.location.value, context)
+            address.value = viewModel.getReadableLocation(viewModel.location.value, context)
             NewLibraryDialog(name, address, viewModel.location, showCamera, showLibraryDialog, photoUri, addNewLibrary)
         }
 
@@ -384,9 +380,10 @@ fun MapScreen(
             CameraView(onImageCaptured = { uri, _ ->
                 photoUri.value = uri.toString()
                 stopCamera.value = true
+                //TODO: after saving marker, set URI to "" so it does not appear when adding another library
             }, onError = { _ ->
                 scope.launch {
-                    snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
+                    snackbarHostState.showSnackbar(context.getString(R.string.camera_error))
                 }
             })
 
@@ -407,16 +404,16 @@ fun MapScreen(
 fun ComposeMapCenterPointMapMarker(
     scope:CoroutineScope,
     showForm: MutableState<Boolean>,
-    currentLocation: LatLng,
+    currentLocation: Location,
     location: MutableState<LatLng>,
     showPin: MutableState<Boolean>
 ){
     val shouldDismiss = remember { mutableStateOf(false) }
-    //val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
+    val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 18f)
-        centerOnLocation(scope, currentLocation)
+        position = CameraPosition.fromLatLngZoom(loc, 18f)
+        centerOnLocation(scope, loc)
     }
 
     // Returning values
@@ -457,3 +454,4 @@ fun CameraPositionState.centerOnLocation(
         animate(update)
     }
 }
+
