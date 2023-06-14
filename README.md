@@ -45,11 +45,11 @@
 
 ## Additional features
 ### TODO
-* UI Adaptability: Localization (5%)
 * UI Adaptability: Rotation (5%)
 * Securing communication (5%) or something else
 ### Complete
 * UI Adaptability: Light/Dark Theme (5%) (just pick app colors)
+* UI Adaptability: Localization (5%)
 
 
 ## Used libraries
