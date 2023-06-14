@@ -5,7 +5,6 @@
 
 ## Mandatory features
 ### TODO
-* When a user searches for books using a search filter, search results can be downloaded only as scrolling requires - paging lib
 * When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
 
 
@@ -19,6 +18,7 @@
 * The map can be dragged around to show more libraries.
 * Show placeholder images when user is on the metered connection
 * The book search screen allows users to see the full list of books ever donated to any library managed from within the App and to filter it down with a text search
+* When a user searches for books using a search filter, search results can be downloaded only as scrolling requires
 * The user should be able to center the map on their current location at the press of a button. 
 * A button to enable/ disable notifications of when the book becomes available in one of the user’s favorite libraries
 * A list of libraries where the book is available indicating how far away they are and sorted by this distance
