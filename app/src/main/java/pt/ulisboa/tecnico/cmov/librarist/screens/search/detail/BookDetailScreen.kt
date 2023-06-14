@@ -59,6 +59,7 @@ fun BookDetailScreen(
     val book = viewModel.bookDetail
     val loading = viewModel.loading
     val notifications by viewModel.notifications.collectAsState()
+    var context = LocalContext.current
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -194,7 +195,7 @@ fun BookDetailScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 6.dp),
-                                text = "Locations",
+                                text = context.getString(R.string.locations),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                 fontWeight = FontWeight.Bold,
@@ -243,7 +244,7 @@ fun BookDetailScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Not available",
+                                    text = context.getString(R.string.not_available),
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = MaterialTheme.typography.headlineMedium.fontSize,

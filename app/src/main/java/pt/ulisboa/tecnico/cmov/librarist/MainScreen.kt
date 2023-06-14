@@ -53,8 +53,8 @@ fun MainScreen(navController: NavHostController) {
 
     Scaffold(
         topBar = {
-            when(currentRoute){
-                "mapScreen", "searchScreen"-> {
+            when (currentRoute) {
+                "mapScreen", "searchScreen" -> {
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
@@ -63,7 +63,8 @@ fun MainScreen(navController: NavHostController) {
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         },
-                        actions = {LanguageSwitchButton()
+                        actions = {
+                            LanguageSwitchButton()
                         },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary)
                     )
@@ -72,16 +73,18 @@ fun MainScreen(navController: NavHostController) {
         },
         bottomBar = { BottomBar(navController = navController) }
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxWidth()
+        ) {
             BottomNavGraph(navController = navController)
         }
     }
 }
 
 @Composable
-fun BottomBar(navController: NavHostController){
+fun BottomBar(navController: NavHostController) {
     val screens = listOf(
         BottomBarScreen.Map,
         BottomBarScreen.BookSearch,
@@ -104,27 +107,27 @@ fun BottomBar(navController: NavHostController){
     }
 }
 
-
 @Composable
 fun RowScope.AddItem(
     screen: BottomBarScreen,
     currentDestination: NavDestination?,
     navController: NavHostController
-){
+) {
     NavigationBarItem(
         label = {
             Text(text = stringResource(id = screen.title))
         },
         icon = {
-            Icon(painter = painterResource(id = screen.icon),
+            Icon(
+                painter = painterResource(id = screen.icon),
                 contentDescription = "Navigation Icon"
             )
         },
-        selected = currentDestination?.hierarchy?.any{
+        selected = currentDestination?.hierarchy?.any {
             it.route == screen.route
         } == true, // If route from current dst matches route passed from screen, make it selected
         onClick = {
-            navController.navigate(screen.route){
+            navController.navigate(screen.route) {
                 // Back button always returns main page - Launches
                 popUpTo(navController.graph.findStartDestination().id)
                 launchSingleTop = true
@@ -156,14 +159,24 @@ fun LanguageSwitchButton() {
         context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 
+    Button(onClick = { expanded = true }) {
+        if (language == "en") {
+            Text(text = "\uD83C\uDDEC\uD83C\uDDE7")
+        } else if (language == "cs") {
+            Text(text = "\uD83C\uDDE8\uD83C\uDDFF")
+        }
+    }
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false }
     ) {
         DropdownMenuItem(
-            contentPadding = PaddingValues(2.dp),
             text = {
-                Text("\uD83C\uDDEC\uD83C\uDDE7 English")
+                Text(
+                    text = "\uD83C\uDDEC\uD83C\uDDE7 English",
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             },
             onClick = {
                 language = "en"
@@ -171,23 +184,17 @@ fun LanguageSwitchButton() {
             }
         )
         DropdownMenuItem(
-            contentPadding = PaddingValues(2.dp),
             text = {
-                Text("\uD83C\uDDE8\uD83C\uDDFF Čeština")
+                Text(
+                    text = "\uD83C\uDDE8\uD83C\uDDFF Čeština",
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             },
             onClick = {
                 language = "cs"
                 expanded = false
             }
         )
-    }
-
-    Button(onClick = { expanded = true }) {
-        if(language == "en"){
-            Text(text = "\uD83C\uDDEC\uD83C\uDDE7")
-        } else if (language == "cs"){
-            Text(text = "\uD83C\uDDE8\uD83C\uDDFF")
-        }
     }
 
     // Save selected language to SharedPreferences

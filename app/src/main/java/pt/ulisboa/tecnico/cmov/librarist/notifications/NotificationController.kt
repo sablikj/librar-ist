@@ -11,8 +11,8 @@ import pt.ulisboa.tecnico.cmov.librarist.R
 class NotificationsController(private val context: Context) {
 
     private val channelId = "my_channel_id"
-    private val channelName = "Book is available"
-    private val channelDescription = "Book is available"
+    private val channelName = context.getString(R.string.available_book)
+    private val channelDescription = context.getString(R.string.available_book)
 
     fun showNotification(title: String, message: String) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

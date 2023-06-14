@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
@@ -45,7 +46,8 @@ class LibraryDetailViewModel @Inject constructor(
     val checkIn = mutableStateOf(false)
     val processBarCode = mutableStateOf(false)
     val loading = mutableStateOf(false)
-    val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException("Library ID is missing")
+    val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException(application.getString(
+        R.string.library_id_missing))
     var libraryDetail by mutableStateOf(Library())
     private val _books = MutableStateFlow<List<Book>>(emptyList())
     val books: StateFlow<List<Book>> = _books
