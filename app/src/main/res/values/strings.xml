@@ -11,7 +11,7 @@
     <string name="some_permission_denied">permission Denied</string>
     <string name="without_permission">Some features won\'t work without the</string>
     <string name="permissions">permissions</string>
-    <string name="search_here">Search here...</string>
+    <string name="search_books">Search books</string>
     <string name="book_added">New book added!</string>
     <string name="not_in_library">Scanned book is not in this library.</string>
     <string name="successfully_added">Book successfully added to this library.</string>
@@ -38,4 +38,11 @@
     <string name="available_in">Available in</string>
     <string name="library">Library</string>
     <string name="distance">Distance</string>
+    <string name="available_book">Book is available</string>
+    <string name="specific_available_book">Book available</string>
+    <string name="now_available">is available now</string>
+    <string name="successfully_check_out">Book was successfully checked-out.</string>
+    <string name="library_id_missing">Library ID is missing</string>
+    <string name="locations">Locations</string>
+    <string name="not_available">Not available</string>
 </resources>

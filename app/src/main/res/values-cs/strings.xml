@@ -11,7 +11,7 @@
     <string name="some_permission_denied">oprávnění Zamítnuto</string>
     <string name="without_permission">Některé funkce nebudou fungovat bez</string>
     <string name="permissions">oprávnění.</string>
-    <string name="search_here">Hledat ...</string>
+    <string name="search_books">Vyhledej knihy</string>
     <string name="book_added">Nová kniha byla přidána!</string>
     <string name="not_in_library">Naskenovaná kniha se nenachází v této knihovně.</string>
     <string name="successfully_added">Kniha byla úspěšně přidána do této knihovny.</string>
@@ -38,4 +38,11 @@
     <string name="available_in">Dostupné v</string>
     <string name="library">Knihovna</string>
     <string name="distance">Vzdálenost</string>
+    <string name="available_book">Kniha je dostupná</string>
+    <string name="specific_available_book">Dostupná kniha</string>
+    <string name="now_available">je aktuálně dostupná</string>
+    <string name="successfully_check_out">Kniha byla úspěšně vyzvednuta.</string>
+    <string name="library_id_missing">ID knihovny chybí</string>
+    <string name="locations">Lokace</string>
+    <string name="not_available">Není dostupná</string>
 </resources>

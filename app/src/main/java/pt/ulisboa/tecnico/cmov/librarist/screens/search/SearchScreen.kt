@@ -22,11 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.ExperimentalPagingApi
 import coil.annotation.ExperimentalCoilApi
 import androidx.paging.compose.collectAsLazyPagingItems
+import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.BookItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +44,7 @@ fun SearchScreen(
     var searchText by remember { mutableStateOf("") }
     var searchActive by remember { mutableStateOf(false) }
     val results = searchViewModel.searchedBooks.collectAsLazyPagingItems()
+    var context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -61,7 +64,7 @@ fun SearchScreen(
                 searchActive = it
             },
             placeholder = {
-                Text(text = "Search books")
+                Text(text = context.getString(R.string.search_books))
             },
             leadingIcon = {
                 Icon(
