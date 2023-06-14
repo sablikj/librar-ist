@@ -155,7 +155,7 @@ fun LibraryDetailScreen(
                 }
                 if (newBook != null) {
                     viewModel.addNewBook(newBook)
-                    Toast.makeText(context, "New book added!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getText(R.string.book_added), Toast.LENGTH_SHORT).show()
                 }
 
                 // Reset the trigger after the library has been added
@@ -181,14 +181,14 @@ fun LibraryDetailScreen(
                         viewModel.showBookDialog.value = true
                     } else{
                         // Check-out
-                        Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.not_in_library), Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     if(viewModel.checkIn.value){
                         // Check-in
                         //viewModel.libraryDetail.books.add(book.barcode)
                         viewModel.repository.checkInBook(book, viewModel.libraryDetail)
-                        Toast.makeText(context, "Book successfully added to this library.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.successfully_added), Toast.LENGTH_SHORT).show()
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
@@ -200,14 +200,14 @@ fun LibraryDetailScreen(
                             }
                             Log.d("books", viewModel.libraryDetail.books.size.toString())
                         }else{
-                            Toast.makeText(context, "Scanned book is not in this library.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getText(R.string.not_in_library), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
 
             }
             else{
-                Toast.makeText(context, "Book was not scanned successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getText(R.string.not_successfully_scanned), Toast.LENGTH_SHORT).show()
             }
             viewModel.processBarCode.value = false
         }
@@ -308,7 +308,7 @@ fun LibraryDetailScreen(
                                         modifier = Modifier.size(ButtonDefaults.IconSize)
                                     )
                                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                    Text("Check-in")
+                                    Text(context.getString(R.string.check_in))
                                 }
                                 // Check-out button
                                 Button(
@@ -332,7 +332,7 @@ fun LibraryDetailScreen(
                                         tint = Color.Red
                                     )
                                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                    Text("Check-out")
+                                    Text(context.getString(R.string.check_out))
                                 }
                             }
                         }
@@ -362,7 +362,7 @@ fun LibraryDetailScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .padding(horizontal = 6.dp),
-                                    text = "Location",
+                                    text = context.getString(R.string.location),
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                     fontWeight = FontWeight.Bold,
@@ -402,7 +402,7 @@ fun LibraryDetailScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 6.dp),
-                                text = "Available books",
+                                text = context.getString(R.string.available_books),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                 fontWeight = FontWeight.Bold,
@@ -459,7 +459,7 @@ fun LibraryDetailScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 6.dp),
-                                text = "No available books",
+                                text = context.getString(R.string.no_books),
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
@@ -476,7 +476,7 @@ fun LibraryDetailScreen(
                     //TODO: after saving marker, set URI to "" so it does not appear when adding another library
                 }, onError = { _ ->
                     scope.launch {
-                        snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
+                        snackbarHostState.showSnackbar(context.getString(R.string.camera_error))
                     }
                 })
 

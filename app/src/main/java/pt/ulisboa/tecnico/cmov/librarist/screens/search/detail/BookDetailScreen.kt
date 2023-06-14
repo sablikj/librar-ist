@@ -49,6 +49,7 @@ fun BookDetailScreen(
     val book = viewModel.bookDetail
     val loading = viewModel.loading
     val notifications by viewModel.notifications.collectAsState()
+    val context = LocalContext.current
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -153,7 +154,7 @@ fun BookDetailScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                             .padding(horizontal = 6.dp),
-                                        text = "Available in",
+                                        text = context.getString(R.string.available_in),
                                         color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                         fontWeight = FontWeight.Bold,
@@ -173,12 +174,12 @@ fun BookDetailScreen(
                                     ) {
                                         Column {
                                             Text(
-                                                text = "Library",
+                                                text = context.getString(R.string.library),
                                                 style = MaterialTheme.typography.headlineSmall,
                                                 modifier = Modifier.padding(end = 8.dp)
                                             )
                                             Text(
-                                                text = "Distance",
+                                                text = context.getString(R.string.distance),
                                                 style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                             )

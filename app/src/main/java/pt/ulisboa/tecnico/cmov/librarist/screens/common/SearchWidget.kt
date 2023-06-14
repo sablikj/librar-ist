@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ulisboa.tecnico.cmov.librarist.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +48,7 @@ fun SearchWidget(
         tonalElevation = LocalAbsoluteTonalElevation.current, // IDK, changed from last version
         color = MaterialTheme.colorScheme.primary
     ) {
+        val context = LocalContext.current
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -57,8 +60,7 @@ fun SearchWidget(
             placeholder = {
                 Text(
                     modifier = Modifier,
-
-                    text = "Search here...",
+                    text = context.getString(R.string.search_here),
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontSize = 14.sp
                 )

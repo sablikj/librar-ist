@@ -58,7 +58,7 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
 
     AlertDialog(
         onDismissRequest = {},
-        title = { Text("New book") },
+        title = { Text(context.getString(R.string.new_book)) },
         text = {
             Column {
                 // Barcode
@@ -66,21 +66,21 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
                     TextField(
                         value = it,
                         onValueChange = { newbarcode -> barcode.value = newbarcode},
-                        label = { Text("Barcode") }
+                        label = { Text(context.getString(R.string.barcode)) }
                     )
                 }
                 // Name
                 TextField(
                     value = name.value,
                     onValueChange = { newName -> name.value = newName },
-                    label = { Text("Name") }
+                    label = { Text(context.getString(R.string.name)) }
                 )
 
                 // Author
                 TextField(
                     value = author.value,
                     onValueChange = { newAuthor -> author.value = newAuthor },
-                    label = { Text("Author") }
+                    label = { Text(context.getString(R.string.author)) }
                 )
                 Spacer(modifier = Modifier.padding(PaddingValues(8.dp)),)
                 if(photo_uri.value != ""){
@@ -117,16 +117,16 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
                         showCamera.value = true
                         shouldDismiss.value = true
                     }) {
-                    Text("Take Photo")
+                    Text(context.getString(R.string.take_photo))
                 }
                 Button(onClick = {
                     if(photo_uri.value.isEmpty()){
-                        Toast.makeText(context, "Photo of the book is required.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.photo_required), Toast.LENGTH_SHORT).show()
                     }else if (name.value.isEmpty()){
-                        Toast.makeText(context, "Name of the book is required.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.name_required), Toast.LENGTH_SHORT).show()
                     }
                     else if (author.value.isEmpty()){
-                        Toast.makeText(context, "Author of the book is required.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.author_required), Toast.LENGTH_SHORT).show()
                     }
                     else{
                         viewModel.uriToImage(Uri.parse(photo_uri.value))
@@ -134,7 +134,7 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
                         addNewBook.value = true
                     }
                 }) {
-                    Text("Confirm")
+                    Text(context.getString(R.string.confirm))
                 }
             }
         }

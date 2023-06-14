@@ -162,7 +162,7 @@ fun MapScreen(
                     books = mutableListOf()
                 )
                 viewModel.addLibrary(newLibrary)
-                Toast.makeText(context, "New library added!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getText(R.string.library_added), Toast.LENGTH_SHORT).show()
 
                 // Reset the trigger after the library has been added
                 addNewLibrary.value = false
@@ -223,11 +223,11 @@ fun MapScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text(text = "Permission Denied") },
-            text = { Text(text = "Some features won't work without the permissions.") },
+            title = { Text(text = context.getString(R.string.permission_denied)) },
+            text = { Text(text = context.getString(R.string.permission_denied_description)) },
             confirmButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text(text = "OK")
+                    Text(text = context.getString(R.string.ok))
                 }
             }
         )
@@ -258,7 +258,7 @@ fun MapScreen(
                 searchActive = it
             },
             placeholder = {
-                Text(text = "Search")
+                Text(text = context.getString(R.string.search))
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
@@ -383,7 +383,7 @@ fun MapScreen(
                 //TODO: after saving marker, set URI to "" so it does not appear when adding another library
             }, onError = { _ ->
                 scope.launch {
-                    snackbarHostState.showSnackbar("An error occurred while trying to take a picture")
+                    snackbarHostState.showSnackbar(context.getString(R.string.camera_error))
                 }
             })
 
@@ -397,7 +397,6 @@ fun MapScreen(
                 showLibraryDialog.value = true
             }
         }
-        //LanguageSwitchButton()
     }
 }
 
