@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.navigation
 
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember

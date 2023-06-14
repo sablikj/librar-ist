@@ -27,12 +27,6 @@ fun CameraView(onImageCaptured: (Uri, Boolean) -> Unit, onError: (ImageCaptureEx
             is CameraUIAction.OnCameraClick -> {
                 imageCapture.takePicture(context, lensFacing, onImageCaptured, onError)
             }
-            is CameraUIAction.OnAcceptImageClick -> {
-                //TODO: implement
-            }
-            is CameraUIAction.OnDenyImageClick -> {
-                //TODO: implement
-            }
         }
     }
 }

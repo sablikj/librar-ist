@@ -1,8 +1,6 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.camera
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -32,7 +30,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import pt.ulisboa.tecnico.cmov.librarist.R
 
 
@@ -88,15 +85,6 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        //TODO: Add retake and accept to image view
-        /*
-        CameraControl(
-            painter = painterResource(id = R.drawable.baseline_repeat_24),
-            description = "Retake photo",
-            modifier= Modifier.size(64.dp),
-            onClick = { cameraUIAction(CameraUIAction.OnDenyImageClick) }
-        )*/
-
         CameraControl(
             painter = painterResource(id = R.drawable.outline_lens_24),
             description = "Take photo",
@@ -106,13 +94,6 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
                 .border(1.dp, Color.White, CircleShape),
             onClick = { cameraUIAction(CameraUIAction.OnCameraClick) }
         )
-        /*
-        CameraControl(
-            painter = painterResource(id = R.drawable.baseline_check_24),
-            description = "Accept photo",
-            modifier= Modifier.size(64.dp),
-            onClick = { cameraUIAction(CameraUIAction.OnAcceptImageClick) }
-        )*/
     }
 }
 
@@ -135,13 +116,4 @@ fun CameraControl(
             tint = Color.White
         )
     }
-}
-//TODO: Fix permissions when declined
-@Composable
-fun checkStoragePermission(): Boolean {
-    val context = LocalContext.current
-    return ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    ) == PackageManager.PERMISSION_GRANTED
 }

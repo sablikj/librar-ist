@@ -34,7 +34,7 @@ import javax.inject.Inject
 class LibraryDetailViewModel @Inject constructor(
     val repository: Repository,
     val application: Application,
-    val imageUtils: ImageUtils,
+    private val imageUtils: ImageUtils,
     savedStateHandle: SavedStateHandle,
     private val contentResolver: ContentResolver
 ): ViewModel() {
@@ -83,7 +83,7 @@ class LibraryDetailViewModel @Inject constructor(
         }
     }
 
-    fun ProcessBook(context: Context, checkInBook: Boolean) {
+    fun processBook(context: Context, checkInBook: Boolean) {
         val scanner = GmsBarcodeScanning.getClient(context, options)
         scanner.startScan()
             .addOnSuccessListener { barcode ->

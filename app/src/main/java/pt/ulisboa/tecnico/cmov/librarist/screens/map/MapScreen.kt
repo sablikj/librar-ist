@@ -2,12 +2,9 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
-import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,9 +23,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -38,12 +32,10 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -64,15 +56,12 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.detail.centerOnLocation
-
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import java.util.*
-import android.content.res.Configuration
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import pt.ulisboa.tecnico.cmov.librarist.utils.checkCameraPermission
+import pt.ulisboa.tecnico.cmov.librarist.utils.checkLocationPermission
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,7 +100,7 @@ fun MapScreen(
     // Permissions
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
-    locationPermissionGranted = viewModel.checkLocationPermission()
+    locationPermissionGranted = checkLocationPermission(context)
     var showDialog by remember { mutableStateOf(false) }
 
     // Searchbar
@@ -372,7 +361,7 @@ fun MapScreen(
 
         if (showPin.value) {
             // Check camera permission first
-            if(!viewModel.checkCameraPermission()){
+            if(!checkCameraPermission(LocalContext.current)){
                 val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 requestMultiplePermissions.launch(permissions)
             }else{

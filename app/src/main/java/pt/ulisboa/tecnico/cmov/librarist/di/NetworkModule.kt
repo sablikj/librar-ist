@@ -13,7 +13,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.API_BASE
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 

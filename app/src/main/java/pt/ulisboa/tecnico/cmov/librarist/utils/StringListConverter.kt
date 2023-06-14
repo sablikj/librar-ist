@@ -5,12 +5,12 @@ import androidx.room.TypeConverter
 
 class StringListConverter {
     @TypeConverter
-    fun fromStringList(vals: List<String>?): String? {
+    fun fromStringList(vals: MutableList<String>?): String? {
         return vals?.joinToString(",")
     }
 
     @TypeConverter
-    fun toStringList(string: String?): List<String>? {
-        return string?.split(",")
+    fun toStringList(string: String?): MutableList<String>? {
+        return string?.split(",")?.toMutableList()
     }
 }

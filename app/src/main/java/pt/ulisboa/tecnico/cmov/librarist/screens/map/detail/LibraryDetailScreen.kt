@@ -307,7 +307,7 @@ fun LibraryDetailScreen(
                                 Button(
                                     onClick = {
                                         // true for check-in
-                                        viewModel.ProcessBook(context, true)
+                                        viewModel.processBook(context, true)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                                     contentPadding = PaddingValues(
@@ -329,7 +329,7 @@ fun LibraryDetailScreen(
                                 Button(
                                     onClick = {
                                         // false for checkout
-                                        viewModel.ProcessBook(context, false)
+                                        viewModel.processBook(context, false)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                                     contentPadding = PaddingValues(

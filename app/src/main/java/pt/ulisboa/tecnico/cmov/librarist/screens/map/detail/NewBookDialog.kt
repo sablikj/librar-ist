@@ -50,9 +50,6 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
     if (shouldDismiss.value){
         shouldDismiss.value = false
         showBookDialog.value = false
-
-        // Add book to DB
-
         return
     }
 
