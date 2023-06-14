@@ -6,27 +6,19 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.location.Geocoder
 import android.location.Location
-import android.media.ExifInterface
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
@@ -42,7 +34,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
@@ -50,8 +41,7 @@ import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.ImageUtils
 import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
-import java.io.ByteArrayOutputStream
-import java.util.Locale
+import pt.ulisboa.tecnico.cmov.librarist.utils.checkNetworkType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -74,7 +64,7 @@ object AppModule {
 @HiltViewModel
 class MapViewModel @Inject constructor(application: Application,
                                        val locationUtils: LocationUtils,
-                                       val imageUtils: ImageUtils,
+                                       private val imageUtils: ImageUtils,
                                        val repository: Repository,
                                        private val contentResolver: ContentResolver
 ): ViewModel()
@@ -100,7 +90,21 @@ class MapViewModel @Inject constructor(application: Application,
     var searchLocation = MutableLiveData<LatLng?>(null)
 
     init {
-        updateLibraries(application.applicationContext)
+        viewModelScope.launch {
+            // Getting users location
+            val loc = locationUtils.getLastKnownLocation(context)
+            if (loc != null) {
+                state.value.lastKnownLocation.value = LatLng(loc.latitude, loc.longitude)
+            }
+
+            // Getting libraries
+            val libs = withContext(Dispatchers.IO) {
+                repository.getLibraries(context)
+            }
+            state.value.libraries.value = libs
+        }.invokeOnCompletion {
+            preloadData(state.value.libraries)
+        }
     }
 
     // Converting URI to byteArray
@@ -125,27 +129,21 @@ class MapViewModel @Inject constructor(application: Application,
         }
     }
 
-    @Composable
     fun checkLocationPermission(): Boolean {
-        val context = LocalContext.current
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    @Composable
     fun checkCameraPermission(): Boolean {
-        val context = LocalContext.current
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    @Composable
     fun checkStoragePermission(): Boolean {
-        val context = LocalContext.current
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -154,7 +152,7 @@ class MapViewModel @Inject constructor(application: Application,
 
     ////////////////////////////////
     // Searchbar functions
-    fun getAutocompletePredictions(
+    private fun getAutocompletePredictions(
         query: String
     ): Task<FindAutocompletePredictionsResponse> {
         val requestBuilder = FindAutocompletePredictionsRequest.builder()
@@ -187,5 +185,22 @@ class MapViewModel @Inject constructor(application: Application,
                     Log.e("searchbar", "Place not found: " + exception.statusCode)
                 }
             }
+    }
+
+    // Preloading libraries and books in 10 km radius from user
+    private fun preloadData(libraries: MutableState<List<Library>>){
+        val isWifi = checkNetworkType(context)
+        if(isWifi && checkLocationPermission()){
+            val userLocation = LatLng(state.value.lastKnownLocation.value.latitude, state.value.lastKnownLocation.value.longitude)
+            for (library in libraries.value){
+                val distance = locationUtils.getDistance(userLocation, library.location)
+                if(distance < 10000){
+                    // Preload save library and it's books to db
+                    viewModelScope.launch {
+                        repository.preload(library)
+                    }
+                }
+            }
+        }
     }
 }

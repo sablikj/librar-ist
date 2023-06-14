@@ -131,7 +131,7 @@ class LibraryDetailViewModel @Inject constructor(
     //get books by Library
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun getBooksInLibrary(id: String):List<Book> {
-        var books= emptyList<Book>()
+        var books = emptyList<Book>()
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 books = repository.getAvailableBooksInLibraries(application.applicationContext, id)

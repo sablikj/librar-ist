@@ -55,6 +55,4 @@ class NotificationService(
         // Create and show the notification
         notificationsController.showNotification(title, message)
     }
-
-
 }

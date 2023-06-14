@@ -141,7 +141,6 @@ fun MapScreen(
         }
     }
 
-
     val requestMultiplePermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.entries.forEach {
@@ -396,7 +395,7 @@ fun MapScreen(
                 photoUri.value = uri.toString()
                 stopCamera.value = true
                 //TODO: after saving marker, set URI to "" so it does not appear when adding another library
-            }, onError = { _ ->
+            }, onError = {
                 scope.launch {
                     snackbarHostState.showSnackbar(context.getString(R.string.camera_error))
                 }
@@ -424,8 +423,6 @@ fun ComposeMapCenterPointMapMarker(
     showPin: MutableState<Boolean>
 ){
     val shouldDismiss = remember { mutableStateOf(false) }
-    //val loc = LatLng(currentLocation.latitude, currentLocation.longitude)
-
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(currentLocation, 18f)
         centerOnLocation(scope, currentLocation)
