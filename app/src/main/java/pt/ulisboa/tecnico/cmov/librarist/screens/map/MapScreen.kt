@@ -97,7 +97,7 @@ fun MapScreen(
     // Permissions
     var locationPermissionGranted by remember { mutableStateOf(false) }
     var camStorGranted by remember { mutableStateOf(false) }
-    camStorGranted = (viewModel.checkCameraPermission() && viewModel.checkStoragePermission())
+    //camStorGranted = (viewModel.checkCameraPermission() && viewModel.checkStoragePermission())
     locationPermissionGranted = viewModel.checkLocationPermission()
     var showDialog by remember { mutableStateOf(false) }
 

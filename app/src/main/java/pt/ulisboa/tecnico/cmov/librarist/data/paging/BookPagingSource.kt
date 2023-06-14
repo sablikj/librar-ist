@@ -23,17 +23,15 @@ class BookPagingSource(
         return try {
             val offset = (currentPage - 1) * ITEMS_PER_PAGE
 
-            val (isWiFi, isMetered) = checkNetworkType(application.applicationContext)
+            val isWiFi = checkNetworkType(application.applicationContext)
 
             // Use the appropriate API based on the network connection
-            val results = if (isWiFi && !isMetered) {
+            val results = if (isWiFi) {
                 libraryApi.searchBooks(query = query, offset = offset, limit = ITEMS_PER_PAGE).data
-            } else if (!isWiFi && isMetered) {
-                libraryApi.searchBooksMetered(query = query, offset = offset, limit = ITEMS_PER_PAGE).data
             } else {
-                emptyList()
+                libraryApi.searchBooksMetered(query = query, offset = offset, limit = ITEMS_PER_PAGE).data
             }
-            Log.d("paging", results.toString())
+            Log.d("paging", results.size.toString())
 
             if (results.isNotEmpty()) {
                 LoadResult.Page(

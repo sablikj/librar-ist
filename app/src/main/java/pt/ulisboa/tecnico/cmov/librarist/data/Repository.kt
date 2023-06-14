@@ -2,16 +2,11 @@ package pt.ulisboa.tecnico.cmov.librarist.data
 
 import android.app.Application
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.util.Log
-import androidx.core.net.ConnectivityManagerCompat
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
-import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.paging.BookPagingSource
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
@@ -74,15 +69,13 @@ class Repository @Inject constructor(
     suspend fun getLibraries(context: Context): List<Library> {
         // get libraries from api
         try {
-            val (isWiFi, isMetered) = checkNetworkType(context)
+            val isWiFi = checkNetworkType(context)
 
             // Use the appropriate API based on the network connection
-            val response = if (isWiFi && !isMetered) {
+            val response = if (isWiFi) {
                 libraryApi.getLibraries()
-            } else if (!isWiFi && isMetered) {
-                libraryApi.getLibrariesMetered()
             } else {
-                return emptyList()
+                libraryApi.getLibrariesMetered()
             }
 
             if(response.isSuccessful && response.body() != null){
@@ -108,8 +101,7 @@ class Repository @Inject constructor(
 
     suspend fun getNotificationsForBook(barcode: String): Notifications? {
         try {
-            val response = notificationsDao.getNotificationsForBook(barcode)
-            return response
+            return notificationsDao.getNotificationsForBook(barcode)
         } catch (e: Exception) {
             Log.d("getNotifications", "Error during GET: $e")
         }
@@ -137,15 +129,13 @@ class Repository @Inject constructor(
     suspend fun getAvailableBooksInLibraries(context: Context, id: String): List<Book> {
         // get books from api
         try {
-            val (isWiFi, isMetered) = checkNetworkType(context)
+            val isWiFi = checkNetworkType(context)
 
             // Use the appropriate API based on the network connection
-            val response = if (isWiFi && !isMetered) {
+            val response = if (isWiFi) {
                 libraryApi.getAvailableBooksInLibrary(id)
-            } else if (!isWiFi && isMetered) {
-                libraryApi.getAvailableBooksInLibraryMetered(id)
             } else {
-                return emptyList()
+                libraryApi.getAvailableBooksInLibraryMetered(id)
             }
 
             if (response.isSuccessful && response.body() != null) {
@@ -215,15 +205,13 @@ class Repository @Inject constructor(
         if (localBook == null){
             // Look for book in server
             try {
-                val (isWiFi, isMetered) = checkNetworkType(context)
+                val isWiFi = checkNetworkType(context)
 
                 // Use the appropriate API based on the network connection
-                val response = if (isWiFi && !isMetered) {
+                val response = if (isWiFi) {
                     libraryApi.getBook(barcode)
-                } else if (!isWiFi && isMetered) {
+                } else{
                     libraryApi.getBookMetered(barcode)
-                } else {
-                    return null
                 }
 
                 if(response.isSuccessful && response.body() != null){
@@ -273,16 +261,13 @@ class Repository @Inject constructor(
 
     suspend fun refreshBookDetail(context: Context, barcode: String) {
         try {
-            val (isWiFi, isMetered) = checkNetworkType(context)
+            val isWiFi = checkNetworkType(context)
 
             // Use the appropriate API based on the network connection
-            val response = if (isWiFi && !isMetered) {
+            val response = if (isWiFi) {
                 libraryApi.getBook(barcode)
-            } else if (!isWiFi && isMetered) {
+            } else{
                 libraryApi.getBookMetered(barcode)
-            } else {
-                Log.d("API", "No network available.")
-                return
             }
 
             if(response.isSuccessful && response.body() != null){
