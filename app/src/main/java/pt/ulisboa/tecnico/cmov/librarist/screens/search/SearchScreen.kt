@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -99,9 +98,8 @@ fun SearchScreen(
             contentPadding = PaddingValues(all = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ){
-            itemsIndexed(results.itemSnapshotList
-            ){
-                    _, book ->
+            items(results.itemCount) { index ->
+                val book = results[index]
                 book?.let {
                     BookItem(book = book, onDetailClicked = onDetailClicked)
                 }

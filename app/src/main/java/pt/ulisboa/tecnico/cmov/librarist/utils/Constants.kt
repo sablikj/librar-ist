@@ -9,15 +9,9 @@ object Constants {
     const val BOOK_TABLE = "book_table"
     const val NOTIFICATIONS_TABLE = "notifications_table"
 
-    // Key tables
-    const val LIBRARY_REMOTE_KEYS_TABLE = "library_remote_keys"
-    const val BOOK_KEYS_TABLE = "book_remote_keys"
-
     const val DATABASE_NAME = "librarist_database"
-    const val ITEMS_PER_PAGE = 2
+    const val ITEMS_PER_PAGE = 4
 
-    // Permissions
-    const val REQUEST_LOCATION_PERMISSION_CODE = 1
     object Routes {
         // Detail keys
         const val BOOK_DETAIL_ID = "bookId"
