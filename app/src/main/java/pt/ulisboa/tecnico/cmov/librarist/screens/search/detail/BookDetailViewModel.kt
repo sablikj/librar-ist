@@ -1,16 +1,24 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.search.detail
 
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -18,7 +26,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ulisboa.tecnico.cmov.librarist.BuildConfig
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
+import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
@@ -27,6 +37,8 @@ import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationService
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationsController
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 
@@ -39,6 +51,7 @@ class BookDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     val loading = mutableStateOf(false)
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     private val barcode: String? = savedStateHandle[Constants.Routes.BOOK_DETAIL_ID]
     private val notificationController = NotificationsController(application.applicationContext)
     private val notificationService = NotificationService(application, repository, notificationController)
@@ -127,5 +140,34 @@ class BookDetailViewModel @Inject constructor(
             return sortedLibraries.sortedWith(compareBy { it.distance })
         }
         return emptyList()
+    }
+
+    fun shareBook(context: Context, lifecycleScope: CoroutineScope) {
+        // Launching in Lifecycle scope to prevent memory leaks on cancel
+        lifecycleScope.launch(Dispatchers.IO) {
+            val bitmap = BitmapFactory.decodeByteArray(bookDetail.image, 0, bookDetail.image.size)
+
+            // Create a file in the cache directory to share
+            val file = File(context.cacheDir, "${bookDetail.name.replace(' ', '_')}.png")
+            val fileOutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+
+            // Get the Uri for the file using the FileProvider
+            val fileUri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
+
+            // Switching to Main (UI) Thread to start the Activity
+            withContext(Dispatchers.Main) {
+                val intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "${bookDetail.name} ${R.string.share_book_author} ${bookDetail.author}")
+                    putExtra(Intent.EXTRA_STREAM, fileUri)
+                    type = "image/*"
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "${R.string.share_book}"))
+            }
+        }
     }
 }

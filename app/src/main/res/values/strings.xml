@@ -45,4 +45,8 @@
     <string name="library_id_missing">Library ID is missing</string>
     <string name="locations">Locations</string>
     <string name="not_available">Not available</string>
+    <string name="share_library">Share library via</string>
+    <string name="share_book">Share book via</string>
+    <string name="share_book_author">by</string>
+    <string name="share_library_location">located at</string>
 </resources>
