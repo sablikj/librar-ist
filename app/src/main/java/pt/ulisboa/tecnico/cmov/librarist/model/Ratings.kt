@@ -15,6 +15,14 @@ data class Ratings(
     val rating: Int
 )
 
+@Serializable
+@Entity(tableName = Constants.MY_RATINGS_TABLE)
+data class MyRatings(
+    @PrimaryKey(autoGenerate = false)
+    val id: String,
+    val barcode: String,
+    val rating: Int
+)
 
 @Serializable
 data class AVGRating(
@@ -27,6 +35,3 @@ data class RatingsListResponse(var data: List<Ratings>)
 
 @Serializable
 data class RatingsListAVGResponse(var data: List<AVGRating>)
-
-@Serializable
-data class RatingsResponse(var data: List<Library>)

@@ -124,6 +124,11 @@ interface LibraryApi {
         @Body ratings: Ratings
     ): Response<ResponseBody>
 
+    @POST("update_ratings")
+    suspend fun updateRating(
+        @Body ratings: Ratings
+    ): Response<ResponseBody>
+
     @GET("/ratings_by_barcode")
     suspend fun getRatingsByBarcode(
         @Query("barcode") barcode: String

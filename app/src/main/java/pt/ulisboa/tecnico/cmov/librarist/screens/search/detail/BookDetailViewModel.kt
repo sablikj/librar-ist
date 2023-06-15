@@ -28,6 +28,9 @@ import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationService
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationsController
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 
@@ -45,20 +48,28 @@ class BookDetailViewModel @Inject constructor(
     private val notificationService = NotificationService(application, repository, notificationController)
     private val _notifications = MutableStateFlow<Boolean>(false)
     val notifications: StateFlow<Boolean> = _notifications
+
+    private val _rating = MutableStateFlow<Float>(0f)
+    val rating: StateFlow<Float> = _rating
+    var ratingDetail by mutableStateOf(listOf<Ratings>())
+    var ratingAVG by mutableStateOf(0.0)
+    var myRatingId by mutableStateOf("")
+
     private val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
 
     var bookDetail by mutableStateOf(Book())
     var libraries by mutableStateOf(listOf<Library>())
 
-    var ratingDetail by mutableStateOf(listOf<Ratings>())
-
-    var ratingAVG by mutableStateOf(0.0)
-
     fun onNotificationsChanged(notifications: Boolean) {
         _notifications.value = notifications
     }
 
-    fun onLocationChanged(location: Location){
+    fun onMyRatingChanged(value: Int) {
+        _rating.value = value.toFloat()
+        ratings(value)
+    }
+
+    fun onLocationChanged(location: Location) {
         lastKnownLocation.value = location
     }
 
@@ -88,7 +99,12 @@ class BookDetailViewModel @Inject constructor(
                         ratingAVG = it
                     }
                 }
-
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.getMyRatings(application.applicationContext, barcode)?.let {
+                        myRatingId = it.id
+                        onMyRatingChanged(it.rating)
+                    }
+                }
                 // Book detail
                 repository.refreshBookDetail(application.applicationContext, barcode)
                 val bookDetailResult = repository.getBook(application.applicationContext, barcode)
@@ -143,5 +159,43 @@ class BookDetailViewModel @Inject constructor(
             return sortedLibraries.sortedWith(compareBy { it.distance })
         }
         return emptyList()
+    }
+
+    fun ratings(value: Int) {
+        if (myRatingId != "") {
+            updateRating(value, bookDetail.barcode)
+        } else {
+            postRating(value, bookDetail.barcode)
+        }
+    }
+
+    private fun postRating(value: Int, barcode: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            var id = DateTimeFormatter
+                .ofPattern("yyyy.MM.dd.HH.mm.ss.SSSSSS")
+                .withZone(ZoneOffset.UTC)
+                .format(Instant.now()) + "." + (1000..9999).random()
+            var rating = Ratings(
+                id,
+                barcode = barcode,
+                rating = value
+            )
+            repository.postRating(rating)
+            myRatingId = id
+        }
+    }
+
+    private fun updateRating(value: Int, barcode: String) {
+        if (myRatingId != "") {
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.updateMyRatings(
+                    Ratings(
+                        myRatingId,
+                        barcode,
+                        value
+                    )
+                )
+            }
+        }
     }
 }

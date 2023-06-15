@@ -45,6 +45,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.RatingBarStyle
 import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
 
@@ -60,6 +62,7 @@ fun BookDetailScreen(
     val loading = viewModel.loading
     val notifications by viewModel.notifications.collectAsState()
     var context = LocalContext.current
+    val initialRating by viewModel.rating.collectAsState(initial = 0f)
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -276,7 +279,7 @@ fun BookDetailScreen(
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier.padding(horizontal = 6.dp)
                                 )
                             }
                             Text(
@@ -338,6 +341,51 @@ fun BookDetailScreen(
                                     fontWeight = FontWeight.Bold,
                                 )
                             }
+                        }
+                    }
+                    //Add rating
+                    ElevatedCard(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 6.dp),
+                                text = context.getString(R.string.add_rating),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+
+                        ) {
+                            RatingBar(
+                                value = initialRating,
+                                style = RatingBarStyle.Fill(),
+                                onValueChange = {
+                                    viewModel.onMyRatingChanged(it.toInt())
+                                },
+                                onRatingChanged = {
+
+                                }
+                            )
                         }
                     }
                 }

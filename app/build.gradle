@@ -160,6 +160,9 @@ dependencies {
 
     // Places API - address autocomplete
     implementation 'com.google.android.libraries.places:places:3.1.0'
+
+    // Rating lib
+    implementation 'com.github.a914-gowtham:compose-ratingbar:1.3.4'
 }
 
 kapt {

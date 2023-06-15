@@ -29,6 +29,7 @@ class Repository @Inject constructor(
     private val bookDao = libraryDatabase.bookDao()
     private val notificationsDao = libraryDatabase.notificationsDao()
     private val ratingsDao = libraryDatabase.ratingsDao()
+    private val myRatingsDao = libraryDatabase.myRatingsDao()
 
     suspend fun addLibrary(library: Library) {
         libraryDao.insert(library)
@@ -139,7 +140,6 @@ class Repository @Inject constructor(
             } else {
                 libraryApi.getAvailableBooksInLibraryMetered(id)
             }
-
             if (response.isSuccessful && response.body() != null) {
                 // If the API call is successful, update the local database and return the libraries
                 val books = response.body()?.data ?: emptyList()
@@ -426,5 +426,36 @@ class Repository @Inject constructor(
             Log.d("ErrorLaunchDetail", e.toString())
         }
         return 0.0
+    }
+
+    suspend fun getMyRatings(context: Context, barcode: String): Ratings {
+        val localratings = myRatingsDao.getRatingsByBarcode(barcode)
+        return localratings
+    }
+
+    suspend fun updateMyRatings(ratings: Ratings) {
+        myRatingsDao.getRatingsByBarcode(ratings.barcode)?.let {
+            ratingsDao.updateRatings(ratings)
+            myRatingsDao.updateRatings(ratings)
+            try {
+                libraryApi.updateRating(ratings)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+    suspend fun postRating(ratings: Ratings) {
+        //there is no rating for this book yet
+        // First update  locally
+        ratingsDao.addRatings(ratings)
+        myRatingsDao.addRatings(ratings)
+        // Try to update it on the server
+        try {
+            libraryApi.addRating(ratings)
+        } catch (e: Exception) {
+            Log.e("Repository", "Error adding book to the server", e)
+        }
     }
 }

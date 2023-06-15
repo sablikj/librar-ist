@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import pt.ulisboa.tecnico.cmov.librarist.model.Ratings
 
 @Dao
@@ -22,4 +23,19 @@ interface RatingsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addRatings(ratings: List<Ratings>)
+
+    @Update
+    suspend fun updateRatings(rating: Ratings)
+}
+
+@Dao
+interface MyRatingsDao {
+    @Query("SELECT * FROM ratings_table WHERE barcode = :barcode")
+    fun getRatingsByBarcode(barcode: String): Ratings
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addRatings(rating: Ratings)
+
+    @Update
+    suspend fun updateRatings(rating: Ratings)
 }
