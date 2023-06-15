@@ -74,7 +74,12 @@ class LibraryDetailViewModel @Inject constructor(
                 repository.refreshLibraryDetail(libraryId)
                 //get books for library
                 val currentBooks = getBooksInLibrary(libraryId)
-                onBooksChanged(currentBooks)
+
+                //compare books on avg rating before displaying them
+                val comparator = Comparator { book1: Book, book2: Book ->
+                    getAvgBookRating(book1.barcode) - getAvgBookRating(book2.barcode)
+                }
+                onBooksChanged(currentBooks.sortedWith(comparator))
                 repository.getLibraryDetail(it).collect { detail ->
                     withContext(Dispatchers.Main) {
                         libraryDetail = detail
@@ -143,5 +148,17 @@ class LibraryDetailViewModel @Inject constructor(
             }
         }
         return books;
+    }
+    private fun getAvgBookRating(barcode: String): Int {
+        var result = 0;
+        try {
+            viewModelScope.launch(Dispatchers.IO) {
+                result =
+                    repository.getAvgRatingForBook(application.applicationContext, barcode).toInt()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return result;
     }
 }
