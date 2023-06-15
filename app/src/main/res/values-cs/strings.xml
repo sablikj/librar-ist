@@ -46,4 +46,5 @@
     <string name="locations">Lokace</string>
     <string name="not_available">Není dostupná</string>
     <string name="ratings">Hodnocení</string>
+    <string name="add_rating">Líbí se vám tato kniha?\nPřidejte své hodnocení, aby si ji mohli přečíst i ostatní</string>
 </resources>
