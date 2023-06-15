@@ -45,4 +45,5 @@
     <string name="library_id_missing">ID knihovny chybí</string>
     <string name="locations">Lokace</string>
     <string name="not_available">Není dostupná</string>
+    <string name="ratings">Hodnocení</string>
 </resources>

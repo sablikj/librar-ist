@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "f682624ffbd0e97c4ce84a7decdcd35a",
+    "identityHash": "6bc6ff73664674b8d70d33254686b680",
     "entities": [
       {
         "tableName": "book_table",
@@ -129,12 +129,44 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "ratings_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `barcode` TEXT NOT NULL, `rating` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f682624ffbd0e97c4ce84a7decdcd35a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6bc6ff73664674b8d70d33254686b680')"
     ]
   }
 }

@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.BookLib
 import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
+import pt.ulisboa.tecnico.cmov.librarist.model.Ratings
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.ITEMS_PER_PAGE
 import pt.ulisboa.tecnico.cmov.librarist.utils.checkNetworkType
 import javax.inject.Inject
@@ -27,6 +28,7 @@ class Repository @Inject constructor(
     private val libraryDao = libraryDatabase.libraryDao()
     private val bookDao = libraryDatabase.bookDao()
     private val notificationsDao = libraryDatabase.notificationsDao()
+    private val ratingsDao = libraryDatabase.ratingsDao()
 
     suspend fun addLibrary(library: Library) {
         libraryDao.insert(library)
@@ -342,5 +344,87 @@ class Repository @Inject constructor(
         } catch (t: Throwable) {
             Log.d("Preloading Error", t.toString())
         }
+    }
+
+    suspend fun getRatings(context: Context): List<Ratings> {
+        // get libraries from api
+        try {
+            val isWiFi = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi) {
+                libraryApi.getRatings()
+            } else {
+                libraryApi.getRatings()
+            }
+
+            if (response.isSuccessful && response.body() != null) {
+                // If the API call is successful, update the local database and return the libraries
+                val ratings = response.body()?.data ?: emptyList()
+                // libraryDao.addLibraries(libraries)
+                return ratings
+            } else {
+                return emptyList()
+            }
+        } catch (e: Exception) {
+            Log.d("getRatings", "Error during GET: $e")
+        }
+        val localratings = ratingsDao.getRatings()
+
+        // If the local database is not empty, return the libraries from it
+        if (localratings.isNotEmpty()) {
+            return localratings
+        }
+        return localratings
+    }
+
+    suspend fun getRatingsDetail(context: Context, barcode: String): List<Ratings> {
+        try {
+            val isWiFi = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi) {
+                libraryApi.getRatingsByBarcode(barcode)
+            } else {
+                libraryApi.getRatingsByBarcode(barcode)
+            }
+
+            if (response.isSuccessful && response.body() != null) {
+                // If the API call is successful, update the local database and return
+                val ratings = response.body()?.data ?: emptyList()
+                ratingsDao.addRatings(response.body()!!.data[0])
+                return ratings
+            } else {
+                Log.d("API", "Failed to fetch the data.")
+            }
+        } catch (e: Exception) {
+            Log.d("ErrorLaunchDetail", e.toString())
+        }
+        val localratings = ratingsDao.getRatingsByBarcode(barcode)
+        return localratings
+    }
+
+    suspend fun getAvgRatingForBook(context: Context, barcode: String): Double {
+        try {
+            val isWiFi = checkNetworkType(context)
+
+            // Use the appropriate API based on the network connection
+            val response = if (isWiFi) {
+                libraryApi.getRatingsByBarcodeAVG(barcode)
+            } else {
+                libraryApi.getRatingsByBarcodeAVG(barcode)
+            }
+
+            if (response.isSuccessful && response.body() != null) {
+                // If the API call is successful, update the local database and return
+                val ratingsAVG = response.body()?.data ?: emptyList()
+                return ratingsAVG[0].avgRating
+            } else {
+                Log.d("API", "Failed to fetch the data.")
+            }
+        } catch (e: Exception) {
+            Log.d("ErrorLaunchDetail", e.toString())
+        }
+        return 0.0
     }
 }

@@ -23,6 +23,7 @@ import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
+import pt.ulisboa.tecnico.cmov.librarist.model.Ratings
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationService
 import pt.ulisboa.tecnico.cmov.librarist.notifications.NotificationsController
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
@@ -49,6 +50,10 @@ class BookDetailViewModel @Inject constructor(
     var bookDetail by mutableStateOf(Book())
     var libraries by mutableStateOf(listOf<Library>())
 
+    var ratingDetail by mutableStateOf(listOf<Ratings>())
+
+    var ratingAVG by mutableStateOf(0.0)
+
     fun onNotificationsChanged(notifications: Boolean) {
         _notifications.value = notifications
     }
@@ -71,6 +76,17 @@ class BookDetailViewModel @Inject constructor(
                 // Notifications
                 repository.getNotificationsForBook(barcode)?.let {
                     onNotificationsChanged(it.notifications)
+                }
+                //Ratings
+                repository.getRatingsDetail(application.applicationContext, barcode)?.let {
+                    withContext(Dispatchers.Main) {
+                        ratingDetail = it
+                    }
+                }
+                repository.getAvgRatingForBook(application.applicationContext, barcode)?.let {
+                    withContext(Dispatchers.Main) {
+                        ratingAVG = it
+                    }
                 }
 
                 // Book detail
