@@ -73,6 +73,8 @@ class MapViewModel @Inject constructor(application: Application,
 
     // Places API
     private val placesClient = Places.createClient(application.applicationContext)
+    // A LiveData to hold the permission state
+    val locationPermissionGranted = MutableLiveData(false)
 
     // Markers
     val location = mutableStateOf(LatLng(0.0, 0.0))
@@ -83,14 +85,30 @@ class MapViewModel @Inject constructor(application: Application,
     // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
     var searchLocation = MutableLiveData<LatLng?>(null)
+    val initialLocation: MutableState<Location?> = mutableStateOf(null)
 
     init {
+        locationPermissionGranted.observeForever { granted ->
+            if (granted) {
+                viewModelScope.launch {
+                    locationUtils.startLocationUpdates()
+                    locationUtils.locationSharedFlow.collect { location ->
+                        lastKnownLocation.value = location
+                        state.value.lastKnownLocation.value = LatLng(location.latitude, location.longitude)
+                        if (initialLocation.value == null) {
+                            initialLocation.value = location
+                        }
+                    }
+                }
+            }
+        }
         viewModelScope.launch {
+            /*
             // Getting users location
             val loc = locationUtils.getLastKnownLocation(context)
             if (loc != null) {
                 state.value.lastKnownLocation.value = LatLng(loc.latitude, loc.longitude)
-            }
+            }*/
 
             // Getting libraries
             val libs = withContext(Dispatchers.IO) {
@@ -100,6 +118,10 @@ class MapViewModel @Inject constructor(application: Application,
         }.invokeOnCompletion {
             preloadData(state.value.libraries)
         }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        locationUtils.stopLocationUpdates()
     }
 
     // Converting URI to byteArray
