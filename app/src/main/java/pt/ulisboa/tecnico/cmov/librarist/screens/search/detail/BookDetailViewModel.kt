@@ -26,6 +26,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import pt.ulisboa.tecnico.cmov.librarist.BuildConfig
 import pt.ulisboa.tecnico.cmov.librarist.MapApplication
 import pt.ulisboa.tecnico.cmov.librarist.R
@@ -40,7 +43,8 @@ import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
-
+import okhttp3.Request
+import okhttp3.Response
 
 @HiltViewModel
 class BookDetailViewModel @Inject constructor(
@@ -61,6 +65,39 @@ class BookDetailViewModel @Inject constructor(
 
     var bookDetail by mutableStateOf(Book())
     var libraries by mutableStateOf(listOf<Library>())
+
+    private val client = OkHttpClient()
+    private var webSocket: WebSocket? = null
+
+    fun connectWebSocket() {
+        //websocket url - Its necessary to create endpoint using ws(non secured) or wss(secured)
+        val request = Request.Builder().url("wss://your-websocket-url").build()
+        val listener = object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                Log.d("WebSocket", "Connection opened.")
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                Log.d("WebSocket", "Received message: $text")
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                Log.e("WebSocket", "Error occurred: ${t.message}")
+            }
+        }
+
+        webSocket = client.newWebSocket(request, listener)
+    }
+
+    fun disconnectWebSocket() {
+        webSocket?.close(1000, "Closing WebSocket")
+        webSocket = null
+    }
+    // Override onCleared() to close the WebSocket when the ViewModel is about to be destroyed
+    override fun onCleared() {
+        super.onCleared()
+        disconnectWebSocket()
+    }
 
     fun onNotificationsChanged(notifications: Boolean) {
         _notifications.value = notifications

@@ -28,6 +28,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,6 +75,18 @@ fun BookDetailScreen(
             .build(),
         contentScale = ContentScale.Fit
     )
+
+// Connect to the WebSocket when the screen is shown
+    LaunchedEffect(Unit) {
+        viewModel.connectWebSocket()
+    }
+
+// Remember to close the connection when the screen is dismissed
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.disconnectWebSocket()
+        }
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(modifier = Modifier.padding(bottom = 8.dp),
