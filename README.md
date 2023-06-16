@@ -41,9 +41,7 @@
     * A photo (taken from the phone camera) 
 
 ## Additional features
-### TODO
 * User Ratings (10%)
-### Complete
 * UI Adaptability: Light/Dark Theme (5%)
 * UI Adaptability: Localization (5%)
 * Social Sharing To Other Apps (5%)
@@ -62,6 +60,7 @@
 * [Maps SDK](https://developers.google.com/maps/documentation/android-sdk/overview)
 * [Places SDK](https://developers.google.com/maps/documentation/places/android-sdk/overview)
 * [Gson](https://github.com/google/gson)
+* [Compose-Ratingbar](https://github.com/a914-gowtham/compose-ratingbar)
 
 
 ## Authors
