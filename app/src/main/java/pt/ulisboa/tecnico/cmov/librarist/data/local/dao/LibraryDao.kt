@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
-import java.util.UUID
 
 @Dao
 interface LibraryDao {
@@ -25,7 +24,7 @@ interface LibraryDao {
     suspend fun updateLibrary(library: Library)
 
     @Query("SELECT * FROM library_table WHERE id = :id")
-    fun getLibraryDetail(id: String): Flow<Library>
+    fun getLibraryDetail(id: String): Flow<Library?>
 
     @Query("SELECT * FROM library_table WHERE name = :name")
     fun findLibrary(name: String): List<Library>

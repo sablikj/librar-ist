@@ -32,4 +32,3 @@ data class Library(
 data class LibraryListResponse(var data: List<Library>)
 @Serializable
 data class LibraryResponse(var data: List<Library>)
-//TODO: prompt for permissions when checking in/out books

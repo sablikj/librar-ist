@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 import pt.ulisboa.tecnico.cmov.librarist.data.local.LibraryDatabase
 import pt.ulisboa.tecnico.cmov.librarist.data.paging.BookPagingSource
 import pt.ulisboa.tecnico.cmov.librarist.data.remote.LibraryApi
@@ -81,6 +84,15 @@ class Repository @Inject constructor(
             if(response.isSuccessful && response.body() != null){
                 // If the API call is successful, update the local database and return the libraries
                 val libraries = response.body()?.data ?: emptyList()
+
+                // Merge favourite state
+                for (library in libraries) {
+                    val localLibrary = libraryDao.getLibraryDetail(library.id).firstOrNull()
+                    if (localLibrary != null) {
+                        library.favourite = localLibrary.favourite
+                    }
+                }
+
                 libraryDao.addLibraries(libraries)
                 return libraries
             } else {
@@ -162,9 +174,13 @@ class Repository @Inject constructor(
         try {
             val response = libraryApi.getLibraryDetail(id)
             if(response.isSuccessful && response.body() != null){
-                // If the API call is successful, update the local database and return the libraries
                 val library = response.body()?.data?.get(0)
                 if (library != null) {
+                    val localLibrary = libraryDao.getLibraryDetail(id).firstOrNull()
+                    if(localLibrary != null){
+                        // If the library already exists locally, use its favourite property
+                        library.favourite = localLibrary.favourite
+                    }
                     libraryDao.insert(library)
                 }else{
                     Log.d("API", "Failed to fetch the data.")
@@ -177,7 +193,7 @@ class Repository @Inject constructor(
         }
     }
 
-    fun getLibraryDetail(id: String): Flow<Library> =
+    fun getLibraryDetail(id: String): Flow<Library?> =
         libraryDatabase.libraryDao().getLibraryDetail(id)
 
     // Locally only - for favorite libs

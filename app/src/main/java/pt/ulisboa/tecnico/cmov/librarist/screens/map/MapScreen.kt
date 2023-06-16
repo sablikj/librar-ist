@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -321,33 +320,19 @@ fun MapScreen(
             // Adding library markers
             viewModel.state.value.libraries.value.forEach { library ->
                 val markerState = rememberMarkerState(position = library.location)
-                if(library.favourite){
-                    Marker(
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
-                        state = markerState,
-                        title = library.name,
-                        onInfoWindowClick = {
-                            // Open only if Camera and storage permissions are granted
-                            scope.launch {
-                                if(camStorGranted) {
-                                    onMarkerClicked(library.id)
-                                }
+                Marker(
+                    icon = if(library.favourite) BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN) else BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+                    state = markerState,
+                    title = library.name,
+                    onInfoWindowClick = {
+                        // Open only if Camera and storage permissions are granted
+                        scope.launch {
+                            if(camStorGranted) {
+                                onMarkerClicked(library.id)
                             }
                         }
-                    )
-                }else{
-                    Marker(
-                        state = markerState,
-                        title = library.name,
-                        onInfoWindowClick = {
-                            scope.launch {
-                                if(camStorGranted) {
-                                    onMarkerClicked(library.id)
-                                }
-                            }
-                        }
-                    )
-                }
+                    }
+                )
                 // Automatically open the info window if the user's location is within 100 meters
                 lastKnownLocation?.let { userLocation ->
                     val distance = viewModel.locationUtils.getDistance(LatLng(userLocation.latitude, userLocation.longitude), library.location)

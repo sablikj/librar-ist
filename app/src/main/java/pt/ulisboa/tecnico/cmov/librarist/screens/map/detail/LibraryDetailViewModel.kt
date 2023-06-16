@@ -86,9 +86,11 @@ class LibraryDetailViewModel @Inject constructor(
                 val currentBooks = getBooksInLibrary(libraryId)
                 onBooksChanged(currentBooks)
                 repository.getLibraryDetail(it).collect { detail ->
-                    withContext(Dispatchers.Main) {
-                        libraryDetail = detail
-                        loading.value = false
+                    if(detail != null){
+                        withContext(Dispatchers.Main) {
+                            libraryDetail = detail
+                            loading.value = false
+                        }
                     }
                 }
             }
