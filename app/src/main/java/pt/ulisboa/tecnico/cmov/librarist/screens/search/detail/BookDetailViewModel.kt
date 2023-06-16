@@ -46,6 +46,7 @@ import javax.inject.Inject
 import okhttp3.Request
 import okhttp3.Response
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.API_BASE
+import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.API_BASE_SOCKET
 
 @HiltViewModel
 class BookDetailViewModel @Inject constructor(
@@ -73,7 +74,7 @@ class BookDetailViewModel @Inject constructor(
     fun connectWebSocket() {
         Log.d("WebSocket", "connect start")
         //websocket url - Its necessary to create endpoint using ws(non secured) or wss(secured)
-        val request = Request.Builder().url("${API_BASE}get_libraries_by_book_title/?title=%22${bookDetail.name}%22").build()
+        val request = Request.Builder().url("${API_BASE_SOCKET}get_libraries_by_book_title").build()
         Log.d("WebSocket", request.url.toString())
         val listener = object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
