@@ -9,6 +9,9 @@ import pt.ulisboa.tecnico.cmov.librarist.model.CheckInBook
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryListResponse
 import pt.ulisboa.tecnico.cmov.librarist.model.LibraryResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.Ratings
+import pt.ulisboa.tecnico.cmov.librarist.model.RatingsListAVGResponse
+import pt.ulisboa.tecnico.cmov.librarist.model.RatingsListResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -111,4 +114,29 @@ interface LibraryApi {
     suspend fun getAvailableBooksInLibraryMetered(
         @Path("id") id: String
     ): Response<BookListResponse>
+
+    @GET("ratings")
+    suspend fun getRatings(
+    ): Response<RatingsListResponse>
+
+    @POST("ratings")
+    suspend fun addRating(
+        @Body ratings: Ratings
+    ): Response<ResponseBody>
+
+    @POST("update_ratings")
+    suspend fun updateRating(
+        @Body ratings: Ratings
+    ): Response<ResponseBody>
+
+    @GET("/ratings_by_barcode")
+    suspend fun getRatingsByBarcode(
+        @Query("barcode") barcode: String
+    ): Response<RatingsListResponse>
+
+    @GET("/ratings_by_barcode_sum")
+    suspend fun getRatingsByBarcodeAVG(
+        @Query("barcode") barcode: String
+    ): Response<RatingsListAVGResponse>
+
 }

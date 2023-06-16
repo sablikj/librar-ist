@@ -8,6 +8,8 @@ object Constants {
     const val LIBRARY_TABLE = "library_table"
     const val BOOK_TABLE = "book_table"
     const val NOTIFICATIONS_TABLE = "notifications_table"
+    const val RATINGS_TABLE = "ratings_table"
+    const val MY_RATINGS_TABLE = "my_ratings_table"
 
     const val DATABASE_NAME = "librarist_database"
     const val ITEMS_PER_PAGE = 4

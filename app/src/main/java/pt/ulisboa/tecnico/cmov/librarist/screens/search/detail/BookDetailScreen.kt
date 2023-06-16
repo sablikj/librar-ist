@@ -47,6 +47,8 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.RatingBarStyle
 import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
 
@@ -63,6 +65,7 @@ fun BookDetailScreen(
     val notifications by viewModel.notifications.collectAsState()
     var context = LocalContext.current
     val lifecycleScope = rememberCoroutineScope()
+    val initialRating by viewModel.rating.collectAsState(initial = 0f)
 
     val imagePainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -261,6 +264,138 @@ fun BookDetailScreen(
                                     fontWeight = FontWeight.Bold,
                                 )
                             }
+                        }
+                    }
+                    //Ratings here
+                    ElevatedCard(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column() {
+                                Text(
+                                    text = context.getString(R.string.ratings),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp)
+                                )
+                            }
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp),
+                                text = viewModel.ratingAVG.toString(),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        if (viewModel.ratingDetail.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items(viewModel.ratingDetail) { rating ->
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .padding(6.dp)
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Column {
+                                                Text(
+                                                    text = context.getString(R.string.ratings),
+                                                    style = MaterialTheme.typography.headlineSmall,
+                                                    modifier = Modifier.padding(end = 8.dp)
+                                                )
+                                            }
+                                            Text(
+                                                text = rating.rating.toString(),
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = context.getString(R.string.not_available),
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
+                    //Add rating
+                    ElevatedCard(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 6.dp),
+                                text = context.getString(R.string.add_rating),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+
+                        ) {
+                            RatingBar(
+                                value = initialRating,
+                                style = RatingBarStyle.Fill(),
+                                onValueChange = {
+                                    viewModel.onMyRatingChanged(it.toInt())
+                                },
+                                onRatingChanged = {
+
+                                }
+                            )
                         }
                     }
                 }

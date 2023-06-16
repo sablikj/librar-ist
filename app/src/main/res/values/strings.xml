@@ -45,6 +45,8 @@
     <string name="library_id_missing">Library ID is missing</string>
     <string name="locations">Locations</string>
     <string name="not_available">Not available</string>
+    <string name="ratings">Ratings</string>
+    <string name="add_rating">Do you like this book?\nAdd your rating to help others read it as well</string>
     <string name="share_library">Share library via</string>
     <string name="share_book">Share book via</string>
     <string name="share_book_author">by</string>
