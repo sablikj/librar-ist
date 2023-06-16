@@ -54,7 +54,9 @@ fun NewBookDialog(barcode: MutableLiveData<String>,
     }
 
     AlertDialog(
-        onDismissRequest = {},
+        onDismissRequest = {
+            shouldDismiss.value = true
+        },
         title = { Text(context.getString(R.string.new_book)) },
         text = {
             Column {
