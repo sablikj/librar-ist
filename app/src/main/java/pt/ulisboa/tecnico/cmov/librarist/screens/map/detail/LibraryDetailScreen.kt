@@ -197,7 +197,8 @@ fun LibraryDetailScreen(
                     }else{
                         // Check-out
                         // If scanned book is in this library, remove it
-                        val bookInLibrary = viewModel.books.value.find { it.barcode == book.barcode }
+                        val booksInLibrary = viewModel.repository.getAvailableBooksInLibraries(context, viewModel.libraryId)
+                        val bookInLibrary = booksInLibrary.find { it.barcode == book.barcode }
                         if (bookInLibrary != null) {
                             val updatedBooks = viewModel.books.value.toMutableList()
                             updatedBooks.remove(bookInLibrary)

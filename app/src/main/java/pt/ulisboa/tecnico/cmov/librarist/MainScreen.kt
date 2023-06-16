@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,6 +43,7 @@ import com.google.android.libraries.places.api.Places
 import pt.ulisboa.tecnico.cmov.librarist.navigation.BottomBarScreen
 import pt.ulisboa.tecnico.cmov.librarist.navigation.BottomNavGraph
 import java.util.Locale
+import androidx.compose.ui.graphics.Color
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,11 +163,21 @@ fun LanguageSwitchButton() {
         context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 
-    Button(onClick = { expanded = true }) {
+    IconButton(onClick = { expanded = true }) {
         if (language == "en") {
-            Text(text = "\uD83C\uDDEC\uD83C\uDDE7")
+            Icon(
+                painter = painterResource(id = R.drawable.gb),
+                contentDescription = "English flag",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
         } else if (language == "cs") {
-            Text(text = "\uD83C\uDDE8\uD83C\uDDFF")
+            Icon(
+                painter = painterResource(id = R.drawable.cz),
+                contentDescription = "Czech flag",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 
@@ -173,10 +187,18 @@ fun LanguageSwitchButton() {
     ) {
         DropdownMenuItem(
             text = {
-                Text(
-                    text = "\uD83C\uDDEC\uD83C\uDDE7 English",
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+                Box(Modifier.fillMaxWidth()) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.gb),
+                        contentDescription = "English flag",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp).align(Alignment.CenterStart)
+                    )
+                    Text(
+                        text = "English",
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)
+                    )
+                }
             },
             onClick = {
                 language = "en"
@@ -185,10 +207,18 @@ fun LanguageSwitchButton() {
         )
         DropdownMenuItem(
             text = {
-                Text(
-                    text = "\uD83C\uDDE8\uD83C\uDDFF Čeština",
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+                Box(Modifier.fillMaxWidth()) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.cz),
+                        contentDescription = "Czech flag",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp).align(Alignment.CenterStart)
+                    )
+                    Text(
+                        text = "Čeština",
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)
+                    )
+                }
             },
             onClick = {
                 language = "cs"
