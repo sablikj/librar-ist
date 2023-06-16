@@ -110,6 +110,7 @@ fun MapScreen(
     val searchPredictions = remember { mutableStateListOf<AutocompletePrediction>() }
     val searchLocation by viewModel.searchLocation.observeAsState()
 
+
     // Updating libraries after return to main page (favourite libs..)
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(

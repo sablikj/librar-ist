@@ -74,7 +74,7 @@ class MapViewModel @Inject constructor(application: Application,
     // Places API
     private val placesClient = Places.createClient(application.applicationContext)
     // A LiveData to hold the permission state
-    val locationPermissionGranted = MutableLiveData(false)
+    var locationPermissionGranted = MutableLiveData(false)
 
     // Markers
     val location = mutableStateOf(LatLng(0.0, 0.0))
@@ -82,14 +82,14 @@ class MapViewModel @Inject constructor(application: Application,
     // Location
     @SuppressLint("StaticFieldLeak")
     val context: Context = application.applicationContext
-    // TODO: use variable from state
     val lastKnownLocation: MutableLiveData<Location> = MutableLiveData()
     var searchLocation = MutableLiveData<LatLng?>(null)
     val initialLocation: MutableState<Location?> = mutableStateOf(null)
 
     init {
+        locationPermissionGranted.value = checkLocationPermission(context)
         locationPermissionGranted.observeForever { granted ->
-            if (granted) {
+                if (granted) {
                 viewModelScope.launch {
                     locationUtils.startLocationUpdates()
                     locationUtils.locationSharedFlow.collect { location ->
@@ -103,13 +103,6 @@ class MapViewModel @Inject constructor(application: Application,
             }
         }
         viewModelScope.launch {
-            /*
-            // Getting users location
-            val loc = locationUtils.getLastKnownLocation(context)
-            if (loc != null) {
-                state.value.lastKnownLocation.value = LatLng(loc.latitude, loc.longitude)
-            }*/
-
             // Getting libraries
             val libs = withContext(Dispatchers.IO) {
                 repository.getLibraries(context)
