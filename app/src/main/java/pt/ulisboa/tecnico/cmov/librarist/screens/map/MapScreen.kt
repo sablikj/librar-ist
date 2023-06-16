@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -109,6 +110,7 @@ fun MapScreen(
     val searchPredictions = remember { mutableStateListOf<AutocompletePrediction>() }
     val searchLocation by viewModel.searchLocation.observeAsState()
 
+
     // Updating libraries after return to main page (favourite libs..)
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(
@@ -125,6 +127,7 @@ fun MapScreen(
     ) { isGranted: Boolean ->
         if (isGranted) {
             locationPermissionGranted = true
+            viewModel.locationPermissionGranted.value = true
         } else {
             showDialog = true
         }
@@ -225,9 +228,9 @@ fun MapScreen(
         cameraPositionState.position = CameraPosition.fromLatLngZoom(state.value.lastKnownLocation.value, 18f)
     }
 
-    // Triggered when lastKnownLocation is updated
-    LaunchedEffect(lastKnownLocation) {
-        lastKnownLocation?.let { location ->
+    // Triggered when location is obtained for the first time
+    LaunchedEffect(viewModel.initialLocation) {
+        viewModel.initialLocation.value?.let { location ->
             val latLng = LatLng(location.latitude, location.longitude)
             cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 18f)
         }
@@ -320,10 +323,11 @@ fun MapScreen(
         ) {
             // Adding library markers
             viewModel.state.value.libraries.value.forEach { library ->
+                val markerState = rememberMarkerState(position = library.location)
                 if(library.favourite){
                     Marker(
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
-                        state = MarkerState(position = library.location),
+                        state = markerState,
                         title = library.name,
                         onInfoWindowClick = {
                             // Open only if Camera and storage permissions are granted
@@ -336,7 +340,7 @@ fun MapScreen(
                     )
                 }else{
                     Marker(
-                        state = MarkerState(position = library.location),
+                        state = markerState,
                         title = library.name,
                         onInfoWindowClick = {
                             scope.launch {
@@ -346,6 +350,13 @@ fun MapScreen(
                             }
                         }
                     )
+                }
+                // Automatically open the info window if the user's location is within 100 meters
+                lastKnownLocation?.let { userLocation ->
+                    val distance = viewModel.locationUtils.getDistance(LatLng(userLocation.latitude, userLocation.longitude), library.location)
+                    if (distance <= 100) {
+                        markerState.showInfoWindow()
+                    }
                 }
             }
         }
@@ -389,7 +400,6 @@ fun MapScreen(
             CameraView(onImageCaptured = { uri, _ ->
                 photoUri.value = uri.toString()
                 stopCamera.value = true
-                //TODO: after saving marker, set URI to "" so it does not appear when adding another library
             }, onError = {
                 scope.launch {
                     snackbarHostState.showSnackbar(context.getString(R.string.camera_error))

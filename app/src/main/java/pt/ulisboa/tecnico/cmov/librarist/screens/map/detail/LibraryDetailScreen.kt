@@ -141,6 +141,10 @@ fun LibraryDetailScreen(
     )
 
     if(showBookDialog.value){
+        // Reset values
+        name.value = ""
+        author.value = ""
+        photoUri.value = ""
         NewBookDialog(viewModel.scanResult, name, author, showCamera, showBookDialog, photoUri, addNewBook, viewModel)
     }
 
@@ -240,6 +244,13 @@ fun LibraryDetailScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary),
                 actions = {
+                    IconButton(onClick = {
+                        viewModel.shareLibrary(context, scope)
+                    }) {
+                        Icon(painter = painterResource( R.drawable.baseline_share_24),
+                            contentDescription = "Share book",
+                        )
+                    }
                     IconButton(onClick = {
                         viewModel.favourite()
                     }) {

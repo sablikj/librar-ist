@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -62,6 +64,7 @@ fun BookDetailScreen(
     val loading = viewModel.loading
     val notifications by viewModel.notifications.collectAsState()
     var context = LocalContext.current
+    val lifecycleScope = rememberCoroutineScope()
     val initialRating by viewModel.rating.collectAsState(initial = 0f)
 
     val imagePainter = rememberAsyncImagePainter(
@@ -85,6 +88,13 @@ fun BookDetailScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary),
                 actions = {
+                    IconButton(onClick = {
+                        viewModel.shareBook(context, lifecycleScope)
+                    }) {
+                        Icon(painter = painterResource( R.drawable.baseline_share_24),
+                            contentDescription = "Share book",
+                        )
+                    }
                     IconButton(onClick = {
                         viewModel.onNotificationsChanged(!notifications)
                         viewModel.notifications()

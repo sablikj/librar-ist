@@ -3,11 +3,15 @@ package pt.ulisboa.tecnico.cmov.librarist.screens.map.detail
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -16,6 +20,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -23,12 +28,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ulisboa.tecnico.cmov.librarist.BuildConfig
 import pt.ulisboa.tecnico.cmov.librarist.R
 import pt.ulisboa.tecnico.cmov.librarist.data.Repository
 import pt.ulisboa.tecnico.cmov.librarist.model.Book
 import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import pt.ulisboa.tecnico.cmov.librarist.utils.ImageUtils
+import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,6 +45,7 @@ class LibraryDetailViewModel @Inject constructor(
     val repository: Repository,
     val application: Application,
     private val imageUtils: ImageUtils,
+    private val locationUtils: LocationUtils,
     savedStateHandle: SavedStateHandle,
     private val contentResolver: ContentResolver
 ): ViewModel() {
@@ -74,12 +84,7 @@ class LibraryDetailViewModel @Inject constructor(
                 repository.refreshLibraryDetail(libraryId)
                 //get books for library
                 val currentBooks = getBooksInLibrary(libraryId)
-
-                //compare books on avg rating before displaying them
-                val comparator = Comparator { book1: Book, book2: Book ->
-                    getAvgBookRating(book1.barcode) - getAvgBookRating(book2.barcode)
-                }
-                onBooksChanged(currentBooks.sortedWith(comparator))
+                onBooksChanged(currentBooks)
                 repository.getLibraryDetail(it).collect { detail ->
                     withContext(Dispatchers.Main) {
                         libraryDetail = detail
@@ -149,16 +154,35 @@ class LibraryDetailViewModel @Inject constructor(
         }
         return books;
     }
-    private fun getAvgBookRating(barcode: String): Int {
-        var result = 0;
-        try {
-            viewModelScope.launch(Dispatchers.IO) {
-                result =
-                    repository.getAvgRatingForBook(application.applicationContext, barcode).toInt()
+
+    fun shareLibrary(context: Context, lifecycleScope: CoroutineScope) {
+        // Launching in Lifecycle scope to prevent memory leaks on cancel
+        lifecycleScope.launch(Dispatchers.IO) {
+            val bitmap = BitmapFactory.decodeByteArray(libraryDetail.image, 0, libraryDetail.image.size)
+
+            // Create a file in the cache directory to share
+            val file = File(context.cacheDir, "${libraryDetail.name.replace(' ', '_')}.png")
+            val fileOutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+
+            // Get the Uri for the file using the FileProvider
+            val fileUri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
+
+            // Library address
+            val address = locationUtils.getReadableLocation(libraryDetail.location, context)
+            // Switching to Main (UI) Thread to start the Activity
+            withContext(Dispatchers.Main) {
+                val intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "${libraryDetail.name} ${R.string.share_library_location} $address")
+                    putExtra(Intent.EXTRA_STREAM, fileUri)
+                    type = "image/*"
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "${R.string.share_library}"))
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
-        return result;
     }
 }

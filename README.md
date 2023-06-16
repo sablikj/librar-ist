@@ -1,15 +1,11 @@
 # Librar IST
 
-* Android app for managing and crowd-sourcing free libraries. Uses [Android JetPack Compose](https://developer.android.com/jetpack) with Material 3.
+* Android app for managing and crowd-sourcing free libraries. Uses [Android JetPack Compose](https://developer.android.com/jetpack) with Material 3 design.
 * Created as uni project for the CMU course.
 
 ## Mandatory features
 ### TODO
 * When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
-
-
-### Mandatory but won't do
-* Application should be aware of its location and should automatically open free library information panels when close to the library (e.g. within 100m)
 
 ### Complete
 * Two main screens: 
@@ -17,6 +13,7 @@
   * a book search screen.
 * The map can be dragged around to show more libraries.
 * Show placeholder images when user is on the metered connection
+* Application is aware of its location and automaticallys open free library information panels when close to the library (within 100m)
 * The book search screen allows users to see the full list of books ever donated to any library managed from within the App and to filter it down with a text search
 * When a user searches for books using a search filter, search results can be downloaded only as scrolling requires
 * The user should be able to center the map on their current location at the press of a button. 
@@ -45,12 +42,15 @@
 
 ## Additional features
 ### TODO
-* UI Adaptability: Rotation (5%)
-* Securing communication (5%) or something else
+* User Ratings (10%)
 ### Complete
-* UI Adaptability: Light/Dark Theme (5%) (just pick app colors)
+* UI Adaptability: Light/Dark Theme (5%)
 * UI Adaptability: Localization (5%)
+* Social Sharing To Other Apps (5%)
 
+## Prerequisities to run
+* Google Maps API key
+  * Should be saved in the local.properties file as GOOGLE_MAPS_API_KEY 
 
 ## Used libraries
 * Android Room

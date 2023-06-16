@@ -45,6 +45,10 @@
     <string name="library_id_missing">ID knihovny chybí</string>
     <string name="locations">Lokace</string>
     <string name="not_available">Není dostupná</string>
+    <string name="share_library">Sdílet knihovnu přes</string>
+    <string name="share_book">Sdílet knihu přes</string>
+    <string name="share_book_author">od</string>
+    <string name="share_library_location">která se nachází na adrese</string>
     <string name="ratings">Hodnocení</string>
     <string name="add_rating">Líbí se vám tato kniha?\nPřidejte své hodnocení, aby si ji mohli přečíst i ostatní</string>
 </resources>
