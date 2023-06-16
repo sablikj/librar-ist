@@ -210,8 +210,11 @@ fun MapScreen(
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
         if (!camStorGranted) {
-            val permissions =
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            var permissions = arrayOf(Manifest.permission.CAMERA)
+
+            if(android.os.Build.VERSION.SDK_INT <=android.os.Build.VERSION_CODES.Q){
+                permissions+=Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }
             requestMultiplePermissions.launch(permissions)
         } else {
             camStorGranted = true
@@ -373,7 +376,10 @@ fun MapScreen(
         if (showPin.value) {
             // Check camera permission first
             if(!checkCameraPermission(LocalContext.current)){
-                val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                var permissions = arrayOf(Manifest.permission.CAMERA)
+                if(android.os.Build.VERSION.SDK_INT <=android.os.Build.VERSION_CODES.Q){
+                    permissions+=Manifest.permission.WRITE_EXTERNAL_STORAGE
+                }
                 requestMultiplePermissions.launch(permissions)
             }else{
                 camStorGranted = true
