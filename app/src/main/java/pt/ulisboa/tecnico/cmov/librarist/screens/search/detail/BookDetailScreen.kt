@@ -376,7 +376,7 @@ fun BookDetailScreen(
                                     .padding(horizontal = 6.dp),
                                 text = context.getString(R.string.add_rating),
                                 color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                                 fontWeight = FontWeight.Bold
                             )
                         }
