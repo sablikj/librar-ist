@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.librarist.screens.search.detail
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -77,12 +78,14 @@ fun BookDetailScreen(
     )
 
 // Connect to the WebSocket when the screen is shown
-    LaunchedEffect(Unit) {
+    /*LaunchedEffect(Unit) {
+        Log.d("WebSocket", "after LaunchEffect")
         viewModel.connectWebSocket()
-    }
+    }*/
 
 // Remember to close the connection when the screen is dismissed
     DisposableEffect(Unit) {
+        Log.d("WebSocket", "after DisposableEffect")
         onDispose {
             viewModel.disconnectWebSocket()
         }
