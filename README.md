@@ -4,10 +4,6 @@
 * Created as uni project for the CMU course.
 
 ## Mandatory features
-### TODO
-* When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
-
-### Complete
 * Two main screens: 
   * a map of available free libraries.
   * a book search screen.
@@ -38,7 +34,10 @@
 * Allow the user to add a new library, with the following information: 
     * A name for the library. 
     * A location (either picked from a map, searched by address, or using current location) 
-    * A photo (taken from the phone camera) 
+    * A photo (taken from the phone camera)
+ 
+### TODO
+* When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
 
 ## Additional features
 * User Ratings (10%)
