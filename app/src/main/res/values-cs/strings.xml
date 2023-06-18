@@ -40,7 +40,7 @@
     <string name="distance">Vzdálenost</string>
     <string name="available_book">Kniha je dostupná</string>
     <string name="specific_available_book">Dostupná kniha</string>
-    <string name="now_available">je aktuálně dostupná</string>
+    <string name="now_available">" je aktuálně dostupná"</string>
     <string name="successfully_check_out">Kniha byla úspěšně vyzvednuta.</string>
     <string name="library_id_missing">ID knihovny chybí</string>
     <string name="locations">Lokace</string>

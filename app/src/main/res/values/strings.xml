@@ -40,7 +40,7 @@
     <string name="distance">Distance</string>
     <string name="available_book">Book is available</string>
     <string name="specific_available_book">Book available</string>
-    <string name="now_available">is available now</string>
+    <string name="now_available">" is available now"</string>
     <string name="successfully_check_out">Book was successfully checked-out.</string>
     <string name="library_id_missing">Library ID is missing</string>
     <string name="locations">Locations</string>
