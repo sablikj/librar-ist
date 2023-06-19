@@ -85,6 +85,13 @@ class LibraryDetailViewModel @Inject constructor(
                 //get books for library
                 val currentBooks = getBooksInLibrary(libraryId)
                 onBooksChanged(currentBooks)
+                // Saving books locally
+                val newLibrary = libraryDetail.copy()
+                for(book in currentBooks){
+                    newLibrary.books.add(book.barcode)
+                }
+                repository.updateLibrary(newLibrary)
+
                 repository.getLibraryDetail(it).collect { detail ->
                     if(detail != null){
                         withContext(Dispatchers.Main) {
