@@ -10,16 +10,21 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +41,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Library
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants
 import pt.ulisboa.tecnico.cmov.librarist.utils.ImageUtils
 import pt.ulisboa.tecnico.cmov.librarist.utils.LocationUtils
+import pt.ulisboa.tecnico.cmov.librarist.utils.isInternetAvailable
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -55,6 +61,7 @@ class LibraryDetailViewModel @Inject constructor(
     val showBookDialog = mutableStateOf(false)
     val checkIn = mutableStateOf(false)
     val processBarCode = mutableStateOf(false)
+    val saveBook = mutableStateOf(true)
     val loading = mutableStateOf(false)
     val libraryId = savedStateHandle.get<String>(Constants.Routes.LIBRARY_DETAIL_ID) ?: throw IllegalArgumentException(application.getString(
         R.string.library_id_missing))
@@ -62,8 +69,30 @@ class LibraryDetailViewModel @Inject constructor(
     private val _books = MutableStateFlow<List<Book>>(emptyList())
     val books: StateFlow<List<Book>> = _books
 
-    fun onBooksChanged(books: List<Book>) {
+    suspend fun onBooksChanged(books: List<Book>) {
         _books.value = books
+        Log.d("Books","Books ${books.size}")
+        if(saveBook.value && books.isNotEmpty() && isInternetAvailable(application.applicationContext)){
+            saveBooks(books)
+            saveBook.value = false
+        }
+
+    }
+
+    suspend fun saveBooks(books: List<Book>){
+        // Saving books locally
+        val newLibrary = libraryDetail.copy()
+        Log.d("Books","Books copy")
+        for(book in books){
+            if(!newLibrary.books.contains(book.barcode) && book.barcode != ""){
+                newLibrary.books.add(book.barcode)
+                Log.d("Books","Books ${book.barcode}")
+            }
+        }
+        Log.d("Books","Books repo")
+        //Log.d("Books","Books $newLibrary")
+        repository.updateLibrary(newLibrary)
+
     }
 
     // Bar code scanner
@@ -77,26 +106,31 @@ class LibraryDetailViewModel @Inject constructor(
         initLibrary()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun initLibrary(){
+        val isInternetAvailable = isInternetAvailable(application.applicationContext)
         libraryId.let {
             loading.value = true
             viewModelScope.launch(Dispatchers.IO) {
-                repository.refreshLibraryDetail(libraryId)
-                //get books for library
-                val currentBooks = getBooksInLibrary(libraryId)
-                onBooksChanged(currentBooks)
-                // Saving books locally
-                val newLibrary = libraryDetail.copy()
-                for(book in currentBooks){
-                    newLibrary.books.add(book.barcode)
+                if(isInternetAvailable){
+                    repository.refreshLibraryDetail(libraryId)
+                    //get books for library
+                    val currentBooks = getBooksInLibrary(libraryId)
                 }
-                repository.updateLibrary(newLibrary)
 
                 repository.getLibraryDetail(it).collect { detail ->
                     if(detail != null){
                         withContext(Dispatchers.Main) {
                             libraryDetail = detail
                             loading.value = false
+                        }.let {
+                            if(!isInternetAvailable){
+                                if(_books.value.isEmpty()){
+                                    Log.d("Books","Books local")
+                                    val books = repository.getLocalBooks(libraryDetail.books)
+                                    onBooksChanged(books)
+                                }
+                            }
                         }
                     }
                 }

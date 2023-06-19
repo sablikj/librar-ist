@@ -15,6 +15,9 @@ interface BookDao {
     @Query("SELECT * FROM book_table")
     fun getBooks(): List<Book>
 
+    @Query("SELECT * FROM book_table WHERE barcode IN (:books)")
+    fun getBooksInLib(books: List<String>): List <Book>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addBooks(books: List<Book>)
 

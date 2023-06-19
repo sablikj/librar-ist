@@ -83,6 +83,7 @@ import pt.ulisboa.tecnico.cmov.librarist.screens.camera.CameraView
 import pt.ulisboa.tecnico.cmov.librarist.screens.camera.getCameraProvider
 import pt.ulisboa.tecnico.cmov.librarist.screens.common.CircularProgressBar
 import pt.ulisboa.tecnico.cmov.librarist.screens.map.centerOnLocation
+import pt.ulisboa.tecnico.cmov.librarist.utils.isInternetAvailable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -203,6 +204,7 @@ fun LibraryDetailScreen(
                             val updatedBooks = viewModel.books.value.toMutableList()
                             updatedBooks.remove(bookInLibrary)
                             viewModel.onBooksChanged(updatedBooks)
+                            viewModel.saveBooks(updatedBooks)
                             viewModel.repository.checkOutBook(book, viewModel.libraryDetail)
 
                             Toast.makeText(context, context.getString(R.string.successfully_check_out), Toast.LENGTH_SHORT).show()
@@ -230,7 +232,9 @@ fun LibraryDetailScreen(
     }
 
     LaunchedEffect(books.size) {
-        viewModel.getBooksInLibrary(library.id)
+        if(isInternetAvailable(context)){
+            viewModel.getBooksInLibrary(library.id)
+        }
     }
 
     Scaffold(

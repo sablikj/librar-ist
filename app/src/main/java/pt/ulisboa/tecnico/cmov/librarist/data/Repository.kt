@@ -21,6 +21,7 @@ import pt.ulisboa.tecnico.cmov.librarist.model.Notifications
 import pt.ulisboa.tecnico.cmov.librarist.model.Ratings
 import pt.ulisboa.tecnico.cmov.librarist.utils.Constants.ITEMS_PER_PAGE
 import pt.ulisboa.tecnico.cmov.librarist.utils.checkNetworkType
+import pt.ulisboa.tecnico.cmov.librarist.utils.isInternetAvailable
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -93,6 +94,7 @@ class Repository @Inject constructor(
                     val localLibrary = libraryDao.getLibraryDetail(library.id).firstOrNull()
                     if (localLibrary != null) {
                         library.favourite = localLibrary.favourite
+                        library.books = localLibrary.books
                     }
                 }
 
@@ -140,6 +142,9 @@ class Repository @Inject constructor(
             Log.d("addNotifications", "Error during GET: $e")
         }
     }
+    fun getLocalBooks(books :List<String>): List<Book> {
+        return bookDao.getBooksInLib(books)
+    }
 
     suspend fun getAvailableBooksInLibraries(context: Context, id: String): List<Book> {
         // get books from api
@@ -147,29 +152,27 @@ class Repository @Inject constructor(
             val isWiFi = checkNetworkType(context)
 
             // Use the appropriate API based on the network connection
-            val response = if (isWiFi) {
-                libraryApi.getAvailableBooksInLibrary(id)
-            } else {
-                libraryApi.getAvailableBooksInLibraryMetered(id)
+            if(isInternetAvailable(context)){
+                val response = if (isWiFi) {
+                    libraryApi.getAvailableBooksInLibrary(id)
+                } else {
+                    libraryApi.getAvailableBooksInLibraryMetered(id)
+                }
+                if (response.isSuccessful && response.body() != null) {
+                    // If the API call is successful, update the local database and return the libraries
+                    val books = response.body()?.data ?: emptyList()
+                    bookDao.addBooks(books)
+                    return books
+                } else {
+                    return emptyList()
+                }
             }
-            if (response.isSuccessful && response.body() != null) {
-                // If the API call is successful, update the local database and return the libraries
-                val books = response.body()?.data ?: emptyList()
-                bookDao.addBooks(books)
-                return books
-            } else {
-                return emptyList()
-            }
+
         } catch (e: Exception) {
             Log.d("getBooks", "Error during GET: $e")
         }
-        val localBooks = bookDao.getBooks()
 
-        // If the local database is not empty, return the libraries from it
-        if (localBooks.isNotEmpty()) {
-            return localBooks
-        }
-        return localBooks
+        return emptyList()
     }
 
     suspend fun refreshLibraryDetail(id: String) {
@@ -181,9 +184,13 @@ class Repository @Inject constructor(
                     val localLibrary = libraryDao.getLibraryDetail(id).firstOrNull()
                     if(localLibrary != null){
                         // If the library already exists locally, use its favourite property
+                        localLibrary.books.remove("")
                         library.favourite = localLibrary.favourite
+                        library.books = localLibrary.books
+                        library.books.remove("")
+                        Log.d("Books", "REFRESH ${library.books.size}")
                     }
-                    libraryDao.insert(library)
+                    libraryDao.updateLibrary(library)
                 }else{
                     Log.d("API", "Failed to fetch the data.")
                 }
@@ -200,6 +207,7 @@ class Repository @Inject constructor(
 
     // Locally only - for favorite libs
     suspend fun updateLibrary(library: Library){
+        Log.d("Books", library.books.toString())
         libraryDao.updateLibrary(library)
     }
 
@@ -350,7 +358,7 @@ class Repository @Inject constructor(
 
     // Saving library and it's books to db
     suspend fun preload(library: Library){
-        libraryDao.insert(library)
+        libraryDao.updateLibrary(library)
         try {
             val response = libraryApi.getAvailableBooksInLibrary(library.id)
 

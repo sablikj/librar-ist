@@ -107,6 +107,12 @@ class MapViewModel @Inject constructor(application: Application,
             val libs = withContext(Dispatchers.IO) {
                 repository.getLibraries(context)
             }
+            for (lib in libs){
+                lib.books = withContext(Dispatchers.IO){
+                    repository.getAvailableBooksInLibraries(context, lib.id).map { it.barcode }.toMutableList()
+                }
+                Log.d("Books", lib.books.toString())
+            }
             state.value.libraries.value = libs
         }.invokeOnCompletion {
             preloadData(state.value.libraries)
