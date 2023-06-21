@@ -209,11 +209,8 @@ fun MapScreen(
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
         if (!camStorGranted) {
-            var permissions = arrayOf(Manifest.permission.CAMERA)
-
-            if(android.os.Build.VERSION.SDK_INT <=android.os.Build.VERSION_CODES.Q){
-                permissions+=Manifest.permission.WRITE_EXTERNAL_STORAGE
-            }
+            val permissions =
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
             requestMultiplePermissions.launch(permissions)
         } else {
             camStorGranted = true

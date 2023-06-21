@@ -142,10 +142,6 @@ fun LibraryDetailScreen(
     )
 
     if(showBookDialog.value){
-        // Reset values
-        name.value = ""
-        author.value = ""
-        photoUri.value = ""
         NewBookDialog(viewModel.scanResult, name, author, showCamera, showBookDialog, photoUri, addNewBook, viewModel)
     }
 
