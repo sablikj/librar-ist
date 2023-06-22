@@ -1,7 +1,8 @@
 # Librar IST
 
 * Android app for managing and crowd-sourcing free libraries. Uses [Android JetPack Compose](https://developer.android.com/jetpack) with Material 3 design.
-* Created as uni project for the CMU course.
+* App has it's own [API](https://github.com/sablikj/librar-ist-backend-public).
+* Created for the CMU course at IST Lisbon.
 
 ## Mandatory features
 * Two main screens: 
@@ -36,25 +37,31 @@
     * A location (either picked from a map, searched by address, or using current location) 
     * A photo (taken from the phone camera)
  
-### TODO
-* When the user is actively viewing a library or book, ensure that any new content shows up quickly. If the user disengages from the application, use more efficient messaging to save network resources, even if at the expense of increased latency
-
 ## Additional features
 * User Ratings (10%)
 * UI Adaptability: Light/Dark Theme (5%)
 * UI Adaptability: Localization (5%)
 * Social Sharing To Other Apps (5%)
 
+## Demo
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <img src="https://i.imgur.com/TnN7GFX.png" alt="Demo" style="max-width: 400px;">
+    </td>
+  </tr>
+</table>
+
 ## Prerequisities to run
 * Google Maps API key
   * Should be saved in the local.properties file as GOOGLE_MAPS_API_KEY 
 
 ## Used libraries
-* Android Room
-* Retrofit
-* CameraX
-* Dagger - Hilt
-* Coil
+* [Android Room](https://developer.android.com/training/data-storage/room)
+* [Retrofit](https://square.github.io/retrofit/)
+* [CameraX](https://developer.android.com/training/camerax)
+* [Dagger - Hilt](https://dagger.dev/hilt/)
+* [Coil](https://coil-kt.github.io/coil/)
 * [Bar Code Scanner](https://developers.google.com/ml-kit/vision/barcode-scanning/code-scanner)
 * [Maps SDK](https://developers.google.com/maps/documentation/android-sdk/overview)
 * [Places SDK](https://developers.google.com/maps/documentation/places/android-sdk/overview)
