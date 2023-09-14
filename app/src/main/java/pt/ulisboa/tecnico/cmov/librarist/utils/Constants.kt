@@ -2,7 +2,7 @@ package pt.ulisboa.tecnico.cmov.librarist.utils
 
 object Constants {
     //API
-    const val API_BASE = "http://100.68.28.175:5000/"
+    const val API_BASE = "http://207.154.212.74:5000/"
 
     // Object tables
     const val LIBRARY_TABLE = "library_table"

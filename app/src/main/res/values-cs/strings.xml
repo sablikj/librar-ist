@@ -50,5 +50,5 @@
     <string name="share_book_author">od</string>
     <string name="share_library_location">která se nachází na adrese</string>
     <string name="ratings">Hodnocení</string>
-    <string name="add_rating">Líbí se vám tato kniha?\nPřidejte své hodnocení, aby si ji mohli přečíst i ostatní</string>
+    <string name="add_rating">Ohodnoťte tuto knihu</string>
 </resources>
